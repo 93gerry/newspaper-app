@@ -9,21 +9,23 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#030712">
     
-    <title>NewsPaper 🐤 v13.0 Precision</title>
+    <title>NewsPaper 🐤 v14.0 Acid Neon</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- STILI GRAFICI PRECISION REFINED v13 -->
+    <!-- STILI GRAFICI ACID NEON v14 -->
     <style>
         :root {
             --bg-base: #030712;
             --surface-glass: rgba(15, 23, 42, 0.85);
             --surface-card: rgba(15, 23, 42, 0.6);
             --border-glass: rgba(255, 255, 255, 0.08);
-            --primary: #f59e0b;
+            --primary: #ccff00; /* Giallo acido super visibile */
+            --primary-glow: rgba(204, 255, 0, 0.15);
+            --brand-purple: #7c3aed;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
             --nav-height: 46px;
@@ -40,7 +42,10 @@
             user-select: none;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; text-transform: uppercase; }
+
+        /* Permettiamo al testo descrittivo/snippet e input di mantenere il normale case se necessario, ma i menu forzati */
+        input, .card-snippet { text-transform: none !important; }
 
         .app-layout {
             display: flex;
@@ -67,13 +72,13 @@
         }
 
         .brand-logo { 
-            background: linear-gradient(135deg, #7c3aed, #5b21b6); 
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
             width: 32px; height: 32px; 
             border-radius: 9px; 
             display: grid; place-items: center; 
             font-size: 1rem; 
             flex-shrink: 0;
-            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3); 
+            box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4); 
         }
 
         .search-box {
@@ -92,7 +97,7 @@
             outline: none;
             font-family: inherit;
         }
-        .search-input:focus { border-color: rgba(245, 158, 11, 0.4); }
+        .search-input:focus { border-color: rgba(204, 255, 0, 0.5); }
         .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.75rem; }
 
         .action-icon-btn {
@@ -109,20 +114,19 @@
         .action-icon-btn:active { transform: scale(0.9); }
         .action-icon-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
         .action-icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
-        .action-icon-btn.active-notif { color: var(--primary); border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.1); }
+        .action-icon-btn.active-notif { color: var(--primary); border-color: rgba(204, 255, 0, 0.5); background: var(--primary-glow); }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .filter-badge-btn {
-            background: rgba(245, 158, 11, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            background: var(--primary-glow);
+            border: 1px solid rgba(204, 255, 0, 0.4);
             color: var(--primary);
             padding: 0 9px;
             height: 32px;
             border-radius: 9px;
             font-size: 0.7rem;
             font-weight: 800;
-            text-transform: uppercase;
             cursor: pointer;
             white-space: nowrap;
             display: flex;
@@ -167,7 +171,6 @@
             border-radius: 5px; 
             font-size: 0.6rem; 
             font-weight: 800; 
-            text-transform: uppercase; 
             border: 1px solid rgba(255,255,255,0.08); 
         }
         .new-tag { background: #ef4444; color: #fff; padding: 2px 5px; border-radius: 5px; font-size: 0.58rem; font-weight: 800; }
@@ -188,7 +191,7 @@
             opacity: 0.4; filter: grayscale(0.8);
             transition: all 0.2s;
         }
-        .bookmark-btn.active { opacity: 1; filter: grayscale(0); background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); }
+        .bookmark-btn.active { opacity: 1; filter: grayscale(0); background: var(--primary-glow); border-color: rgba(204, 255, 0, 0.4); color: var(--primary); }
 
         /* NAVIGAZIONE IN BASSO MICRO-COMPATTA */
         .bottom-nav-wrapper {
@@ -220,12 +223,12 @@
         .nav-tab-btn { 
             display: flex; align-items: center; gap: 5px; 
             color: var(--text-sub); background: none; border: none; 
-            font-size: 0.65rem; font-weight: 800; text-transform: uppercase; cursor: pointer; 
+            font-size: 0.65rem; font-weight: 800; cursor: pointer; 
             height: 34px; padding: 0 10px;
             border-radius: 10px;
             transition: all 0.2s;
         }
-        .nav-tab-btn.active { color: var(--primary); background: rgba(245, 158, 11, 0.1); }
+        .nav-tab-btn.active { color: var(--primary); background: var(--primary-glow); }
         .nav-tab-btn span:first-child { font-size: 0.9rem; }
 
         /* DRAWER MODALE FILTRI */
@@ -260,10 +263,10 @@
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 14px;
         }
-        .drawer-title { font-size: 0.95rem; font-weight: 800; text-transform: uppercase; color: #fff; }
+        .drawer-title { font-size: 0.95rem; font-weight: 800; color: #fff; }
         .drawer-close { background: rgba(255,255,255,0.08); border: none; color: #fff; width: 26px; height: 26px; border-radius: 50%; font-size: 0.8rem; cursor: pointer; }
 
-        .drawer-section-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-sub); margin-bottom: 6px; margin-top: 12px; }
+        .drawer-section-title { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.8px; color: var(--text-sub); margin-bottom: 6px; margin-top: 12px; }
         
         .drawer-chips-grid {
             display: grid;
@@ -279,7 +282,6 @@
             border-radius: 10px;
             font-size: 0.75rem;
             font-weight: 800;
-            text-transform: uppercase;
             text-align: left;
             cursor: pointer;
             transition: all 0.2s;
@@ -301,7 +303,7 @@
             
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="search-input" class="search-input" placeholder="Cerca..." oninput="renderArticles()">
+                <input type="text" id="search-input" class="search-input" placeholder="CERCA..." oninput="renderArticles()">
             </div>
 
             <button class="filter-badge-btn" onclick="toggleDrawer(true)">
@@ -309,11 +311,12 @@
                 <span>FILTRI</span>
             </button>
 
-            <button class="action-icon-btn" id="notif-btn" onclick="toggleNotifications()" title="Notifiche">
+            <!-- CAMPANELLA NOTIFICHE RIPRISTINATA -->
+            <button class="action-icon-btn" id="notif-btn" onclick="toggleNotifications()" title="NOTIFICHE">
                 <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
 
-            <button class="action-icon-btn" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
+            <button class="action-icon-btn" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
                 <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
             </button>
         </header>
@@ -322,7 +325,7 @@
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Caricamento notizie...</p>
+                    <p>CARICAMENTO NOTIZIE...</p>
                 </div>
             </div>
         </main>
@@ -374,7 +377,7 @@
             const canvas = document.createElement('canvas');
             canvas.width = 180; canvas.height = 180;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#7c3aed';
+            ctx.fillStyle = '#7c3aed'; // SFONDO VIOLA RIPRISTINATO
             ctx.fillRect(0, 0, 180, 180);
             ctx.font = '100px sans-serif';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -397,11 +400,11 @@
         };
 
         let allArticles = [];
-        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v13') || '[]');
+        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v14') || '[]');
         let currentTab = 'home';
         let filterType = 'all'; 
         let filterValue = 'all';
-        let notificationsActive = localStorage.getItem('np_notif_v13') === 'true';
+        let notificationsActive = localStorage.getItem('np_notif_v14') === 'true';
 
         if(notificationsActive) {
             document.getElementById('notif-btn').classList.add('active-notif');
@@ -421,17 +424,17 @@
                     if (permission === 'granted') {
                         notificationsActive = true;
                         btn.classList.add('active-notif');
-                        localStorage.setItem('np_notif_v13', 'true');
+                        localStorage.setItem('np_notif_v14', 'true');
                     } else {
-                        alert("Permesso notifiche negato dal browser.");
+                        alert("PERMESSO NOTIFICHE NEGATO DAL BROWSER.");
                     }
                 } else {
-                    alert("Notifiche non supportate da questo dispositivo.");
+                    alert("NOTIFICHE NON SUPPORTATE DA QUESTO DISPOSITIVO.");
                 }
             } else {
                 notificationsActive = false;
                 btn.classList.remove('active-notif');
-                localStorage.setItem('np_notif_v13', 'false');
+                localStorage.setItem('np_notif_v14', 'false');
             }
         }
 
@@ -533,7 +536,7 @@
             if (index > -1) savedArticles.splice(index, 1);
             else savedArticles.push(article);
 
-            localStorage.setItem('np_bookmarks_v13', JSON.stringify(savedArticles));
+            localStorage.setItem('np_bookmarks_v14', JSON.stringify(savedArticles));
             renderArticles();
         }
 
@@ -598,7 +601,7 @@
                 grid.innerHTML = `
                     <div class="status-box">
                         <p>${currentTab === 'saved' ? 'NESSUN ARTICOLO SALVATO.' : 'NESSUN ARTICOLO TROVATO.'}</p>
-                        <button onclick="manualRefresh()" style="margin-top:10px; padding: 7px 14px; background:var(--primary); border:none; border-radius:8px; font-weight:800; font-size:0.75rem; text-transform:uppercase; color:#030712; cursor:pointer;">AGGIORNA ORA</button>
+                        <button onclick="manualRefresh()" style="margin-top:10px; padding: 7px 14px; background:var(--primary); border:none; border-radius:8px; font-weight:800; font-size:0.75rem; color:#030712; cursor:pointer;">AGGIORNA ORA</button>
                     </div>`;
                 return;
             }
@@ -606,7 +609,7 @@
             filtered.forEach(art => {
                 const isSaved = savedArticles.some(s => s.id === art.id);
                 const dateObj = new Date(art.date);
-                const dateStr = isNaN(dateObj) ? "" : dateObj.toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                const dateStr = isNaN(dateObj) ? "" : dateObj.toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).toUpperCase();
                 const showNewBadge = isNew(art.date);
 
                 const card = document.createElement("a");
@@ -635,7 +638,7 @@
                         <p class="card-snippet">${art.snippet}</p>
                         <div class="card-footer">
                             <span>🕒 ${dateStr}</span>
-                            <button class="bookmark-btn ${isSaved ? 'active' : ''}" onclick="toggleBookmark(event, '${art.id}')" title="Preferiti">⭐</button>
+                            <button class="bookmark-btn ${isSaved ? 'active' : ''}" onclick="toggleBookmark(event, '${art.id}')" title="PREFERITI">⭐</button>
                         </div>
                     </div>
                 `;
