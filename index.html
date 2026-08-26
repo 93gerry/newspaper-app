@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA iOS Fullscreen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NewsPaper">
+    <meta name="theme-color" content="#090d16">
+    
+    <title>NewsPaper 🐤</title>
+
+    <!-- Manifest integrato -->
+    <link rel="manifest" href='data:application/json,{"name":"NewsPaper Gaming","short_name":"NewsPaper","start_url":".","display":"standalone","background_color":"#090d16","theme_color":"#090d16"}'>
+
+    <!-- Icona App iPhone -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%235b21b6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='105'%3E🐤%3C/text%3E%3C/svg%3E">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #090d16;
+            --surface: #131b2e;
+            --primary: #fbbf24;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --nav-base-height: 60px;
+            
+            --c-all: linear-gradient(135deg, #6366f1, #a855f7);
+            --c-ign: #dc2626;
+            --c-multi: #ea580c;
+            --c-every: #2563eb;
+            --c-pc: #059669;
+            --c-ps: #1d4ed8;
+            --c-xbox: #16a34a;
+            --c-nintendo: #e11d48;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .app-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* BARRA SUPERIORE ADATTATA ALLA DYNAMIC ISLAND / NOTCH */
+        .top-bar { 
+            flex-shrink: 0;
+            z-index: 900; 
+            background: rgba(9, 13, 22, 0.94); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); 
+            padding: 10px 16px;
+            padding-top: calc(env(safe-area-inset-top, 20px) + 8px);
+        }
+
+        .header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-logo { background: #5b21b6; border: 1px solid rgba(255,255,255,0.15); width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(91, 33, 182, 0.4); }
+        .brand-title { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .brand-title span { color: var(--primary); }
+        
+        .header-controls { display: flex; align-items: center; gap: 8px; }
+        .limit-wrapper { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; color: var(--text-sub); }
+        .limit-select { background: transparent; border: none; color: var(--primary); font-family: inherit; font-size: 0.85rem; font-weight: 800; outline: none; }
+        .limit-select option { background: var(--surface); color: var(--text-main); }
+
+        .btn-refresh { background: var(--surface); border: 1px solid var(--border); color: var(--text-main); width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+        .btn-refresh svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .search-wrapper { position: relative; margin-bottom: 8px; }
+        .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); padding: 7px 14px 7px 34px; border-radius: 10px; color: var(--text-main); font-size: 0.85rem; outline: none; font-family: inherit; -webkit-appearance: none; }
+        .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.85rem; }
+
+        .filters-container { display: flex; flex-direction: column; gap: 6px; }
+        .filter-row { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .row-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sub); min-width: 65px; flex-shrink: 0; }
+        
+        .tag-chip { background: var(--surface); color: var(--text-sub); border: 1px solid var(--border); padding: 4px 10px; border-radius: 99px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .tag-chip.active { color: #fff; border-color: transparent; }
+        .tag-chip[data-color="all"].active { background: var(--c-all); }
+        .tag-chip[data-color="ign"].active { background: var(--c-ign); }
+        .tag-chip[data-color="multi"].active { background: var(--c-multi); }
+        .tag-chip[data-color="every"].active { background: var(--c-every); }
+        .tag-chip[data-color="pc"].active { background: var(--c-pc); }
+        .tag-chip[data-color="ps"].active { background: var(--c-ps); }
+        .tag-chip[data-color="xbox"].active { background: var(--c-xbox); }
+        .tag-chip[data-color="nintendo"].active { background: var(--c-nintendo); }
+
+        /* AREA CONTENUTO FISSA E SCORREVOLE */
+        .scrollable-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 14px 16px;
+            padding-bottom: calc(var(--nav-base-height) + env(safe-area-inset-bottom, 20px) + 20px);
+        }
+
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; max-width: 1100px; margin: 0 auto; }
+
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; color: inherit; }
+        .card:active { transform: scale(0.98); }
+        .card-cover { width: 100%; height: 160px; position: relative; background: #1a233a; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .badge-container { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
+        .badge-source { background: rgba(9, 13, 22, 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
+        .badge-new { background: #ef4444; color: #fff; padding: 3px 7px; border-radius: 6px; font-size: 0.62rem; font-weight: 800; }
+
+        .card-content { padding: 12px 14px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 0.95rem; font-weight: 700; line-height: 1.35; margin-bottom: 6px; color: var(--text-main); }
+        .card-snippet { font-size: 0.8rem; color: var(--text-sub); line-height: 1.35; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .card-meta { font-size: 0.7rem; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px; margin-top: auto; }
+
+        .btn-star { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); width: 34px; height: 34px; border-radius: 9px; font-size: 1.1rem; cursor: pointer; display: grid; place-items: center; opacity: 0.3; filter: grayscale(0.6); }
+        .btn-star.active { opacity: 1; filter: grayscale(0); background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.5); }
+
+        .bottom-nav { 
+            flex-shrink: 0;
+            z-index: 900;
+            height: calc(var(--nav-base-height) + env(safe-area-inset-bottom, 0px)); 
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            background: rgba(19, 27, 46, 0.95); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border); 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-sub); background: none; border: none; font-size: 0.68rem; font-weight: 600; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+
+        .status-box { grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--text-sub); }
+        .spinner { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+
+        /* VIEWER IN-APP PER NON USCIRE DALL'APP */
+        .reader-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        .reader-modal.open { transform: translateY(0); }
+        .reader-header { padding: calc(env(safe-area-inset-top, 20px) + 8px) 16px 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .btn-close-reader { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+        .reader-iframe { width: 100%; flex-grow: 1; border: none; background: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        
+        <header class="top-bar">
+            <div class="header-main">
+                <div class="brand">
+                    <div class="brand-logo">🐤</div>
+                    <div class="brand-title">News<span>Paper</span></div>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="limit-wrapper">
+                        <span>Limit:</span>
+                        <select id="article-limit" class="limit-select" onchange="renderArticles()">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="15" selected>15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                    <button class="btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
+                        <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" class="search-input" placeholder="Cerca tra le notizie..." oninput="renderArticles()">
+            </div>
+
+            <div class="filters-container">
+                <div class="filter-row">
+                    <button class="tag-chip active" data-color="all" onclick="setFilter('all', 'all', this)">🌐 Tutti i Feed</button>
+                </div>
+
+                <div class="filter-row">
+                    <span class="row-label">Siti Web</span>
+                    <button class="tag-chip" data-color="ign" onclick="setFilter('source', 'IGN Italia', this)">🔥 IGN Italia</button>
+                    <button class="tag-chip" data-color="multi" onclick="setFilter('source', 'Multiplayer.it', this)">⚡ Multiplayer</button>
+                    <button class="tag-chip" data-color="every" onclick="setFilter('source', 'Everyeye.it', this)">🎯 Everyeye</button>
+                </div>
+
+                <div class="filter-row">
+                    <span class="row-label">Piattaforme</span>
+                    <button class="tag-chip" data-color="pc" onclick="setFilter('platform', 'pc', this)">💻 PC</button>
+                    <button class="tag-chip" data-color="ps" onclick="setFilter('platform', 'playstation', this)">🎮 PlayStation</button>
+                    <button class="tag-chip" data-color="xbox" onclick="setFilter('platform', 'xbox', this)">🟢 Xbox</button>
+                    <button class="tag-chip" data-color="nintendo" onclick="setFilter('platform', 'nintendo', this)">🔴 Nintendo</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="scrollable-content">
+            <div class="news-grid" id="news-grid">
+                <div class="status-box">
+                    <div class="spinner"></div>
+                    <p>Sincronizzazione notizie in corso...</p>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+                <span style="font-size:1.2rem">📰</span>
+                <span>Feed</span>
+            </button>
+            <button class="nav-item" id="nav-saved" onclick="switchTab('saved')">
+                <span style="font-size:1.2rem">⭐</span>
+                <span>Preferiti</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <div class="reader-modal" id="reader-modal">
+        <div class="reader-header">
+            <button class="btn-close-reader" onclick="closeReader()">✕ Chiudi</button>
+            <span id="reader-source" style="font-size: 0.75rem; font-weight: 800; color: var(--text-sub);">NOTIZIA</span>
+        </div>
+        <iframe id="reader-iframe" class="reader-iframe" src="about:blank"></iframe>
+    </div>
+
+    <script>
+        const FEEDS = [
+            { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#dc2626" },
+            { name: "Multiplayer.it", url: "https://multiplayer.it/feed/rss/news/", color: "#ea580c" },
+            { name: "Everyeye.it", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#2563eb" }
+        ];
+
+        const PLATFORM_KEYWORDS = {
+            pc: ["pc", "steam", "epic games", "rtx", "gpu", "windows"],
+            playstation: ["playstation", "ps5", "ps4", "psvr", "sony"],
+            xbox: ["xbox", "series x", "series s", "game pass", "microsoft"],
+            nintendo: ["nintendo", "switch", "mario", "zelda", "pokemon"]
+        };
+
+        const DEFAULT_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23131b2e'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-family='sans-serif' font-size='16'%3ENewsPaper 🐤%3C/text%3E%3C/svg%3E";
+
+        let allArticles = [];
+        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks') || '[]');
+        let currentTab = 'home';
+        let filterType = 'all'; 
+        let filterValue = 'all';
+
+        function cleanText(text) {
+            if (!text) return "";
+            const doc = new DOMParser().parseFromString(text, 'text/html');
+            return doc.body.textContent || "";
+        }
+
+        function isNew(pubDate) {
+            const diffMs = new Date() - new Date(pubDate);
+            return (diffMs / (1000 * 60 * 60)) < 3;
+        }
+
+        function parseRSSDate(dateStr) {
+            if (!dateStr) return new Date();
+            let d = new Date(dateStr);
+            return isNaN(d.getTime()) ? new Date() : d;
+        }
+
+        function parseRawXML(xmlString, source) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+            const items = Array.from(xmlDoc.querySelectorAll("item"));
+
+            return items.map(item => {
+                const title = item.querySelector("title")?.textContent || "";
+                const link = item.querySelector("link")?.textContent || "";
+                const description = item.querySelector("description")?.textContent || "";
+                const pubDate = item.querySelector("pubDate")?.textContent || "";
+                const guid = item.querySelector("guid")?.textContent || link;
+
+                let imgUrl = DEFAULT_IMG;
+                const mediaContent = item.getElementsByTagName("media:content")[0];
+                const enclosure = item.querySelector("enclosure");
+                if (mediaContent && mediaContent.getAttribute("url")) {
+                    imgUrl = mediaContent.getAttribute("url");
+                } else if (enclosure && enclosure.getAttribute("url")) {
+                    imgUrl = enclosure.getAttribute("url");
+                } else {
+                    const doc = new DOMParser().parseFromString(description, 'text/html');
+                    const img = doc.querySelector('img');
+                    if (img) imgUrl = img.src;
+                }
+
+                return {
+                    id: guid,
+                    source: source.name,
+                    sourceColor: source.color,
+                    title: cleanText(title),
+                    link: link,
+                    snippet: cleanText(description).slice(0, 130) + "...",
+                    image: imgUrl,
+                    date: parseRSSDate(pubDate)
+                };
+            });
+        }
+
+        /* SCANSIONE MULTI-PROXY A ROTAZIONE VELOCE */
+        async function fetchFeed(source) {
+            const ts = Date.now();
+            const proxies = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_t=${ts}`,
+                `https://corsproxy.io/?${encodeURIComponent(source.url)}&_t=${ts}`
+            ];
+
+            for (const proxyUrl of proxies) {
+                try {
+                    const res = await fetch(proxyUrl);
+                    if (res.ok) {
+                        const text = await res.text();
+                        const parsed = parseRawXML(text, source);
+                        if (parsed.length > 0) return parsed;
+                    }
+                } catch (e) {}
+            }
+            return [];
+        }
+
+        function openArticle(url, source) {
+            document.getElementById('reader-source').innerText = source.toUpperCase();
+            document.getElementById('reader-iframe').src = url;
+            document.getElementById('reader-modal').classList.add('open');
+        }
+
+        function closeReader() {
+            document.getElementById('reader-modal').classList.remove('open');
+            document.getElementById('reader-iframe').src = "about:blank";
+        }
+
+        function toggleBookmark(e, artId) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const article = allArticles.find(a => a.id === artId) || savedArticles.find(a => a.id === artId);
+            if (!article) return;
+
+            const index = savedArticles.findIndex(a => a.id === artId);
+            if (index > -1) {
+                savedArticles.splice(index, 1);
+            } else {
+                savedArticles.push(article);
+            }
+
+            localStorage.setItem('np_bookmarks', JSON.stringify(savedArticles));
+            renderArticles();
+        }
+
+        async function manualRefresh() {
+            const btn = document.getElementById('refresh-btn');
+            btn.classList.add('spinning');
+            await loadAllNews();
+            setTimeout(() => btn.classList.remove('spinning'), 600);
+        }
+
+        async function loadAllNews() {
+            const results = await Promise.all(FEEDS.map(fetchFeed));
+            const freshArticles = results.flat();
+            
+            if (freshArticles.length > 0) {
+                allArticles = freshArticles.sort((a, b) => b.date - a.date);
+            }
+            renderArticles();
+        }
+
+        function setFilter(type, value, element) {
+            filterType = type;
+            filterValue = value;
+            document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            renderArticles();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(`nav-${tab}`).classList.add('active');
+            renderArticles();
+        }
+
+        function isPlatformMatch(article, platform) {
+            const keywords = PLATFORM_KEYWORDS[platform] || [];
+            const textToSearch = (article.title + " " + article.snippet).toLowerCase();
+            return keywords.some(kw => textToSearch.includes(kw));
+        }
+
+        function renderArticles() {
+            const grid = document.getElementById("news-grid");
+            const searchQuery = document.getElementById("search-input").value.toLowerCase();
+            const maxLimit = parseInt(document.getElementById("article-limit").value, 10) || 15;
+            
+            let targetList = (currentTab === 'saved') ? savedArticles : allArticles;
+
+            const filtered = targetList.filter(art => {
+                const matchesSearch = art.title.toLowerCase().includes(searchQuery) || art.snippet.toLowerCase().includes(searchQuery);
+                let matchesFilter = true;
+                if (filterType === 'source') matchesFilter = art.source === filterValue;
+                else if (filterType === 'platform') matchesFilter = isPlatformMatch(art, filterValue);
+
+                return matchesSearch && matchesFilter;
+            });
+
+            const limitedList = filtered.slice(0, maxLimit);
+            grid.innerHTML = "";
+
+            if (limitedList.length === 0) {
+                grid.innerHTML = `
+                    <div class="status-box">
+                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Ricerca notizie in corso o nessun risultato...'}</p>
+                        <button onclick="manualRefresh()" style="margin-top:10px; padding: 6px 12px; background:var(--primary); border:none; border-radius:8px; font-weight:700; color:#000;">Aggiorna ora</button>
+                    </div>`;
+                return;
+            }
+
+            limitedList.forEach(art => {
+                const isSaved = savedArticles.some(s => s.id === art.id);
+                const dateObj = new Date(art.date);
+                const dateStr = isNaN(dateObj) ? "" : dateObj.toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                const showNewBadge = isNew(art.date);
+
+                const card = document.createElement("div");
+                card.className = "card";
+                card.onclick = () => openArticle(art.link, art.source);
+
+                card.innerHTML = `
+                    <div class="card-cover">
+                        <img class="card-img" src="${art.image}" alt="" onerror="this.src='${DEFAULT_IMG}'" loading="lazy">
+                        <div class="badge-container">
+                            <span class="badge-source" style="color: ${art.sourceColor}">${art.source}</span>
+                            ${showNewBadge ? `<span class="badge-new">NEW</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h2 class="card-title">${art.title}</h2>
+                        <p class="card-snippet">${art.snippet}</p>
+                        <div class="card-meta">
+                            <span>🕒 ${dateStr} • ${art.source}</span>
+                            <button class="btn-star ${isSaved ? 'active' : ''}" onclick="toggleBookmark(event, '${art.id}')" title="Preferiti">⭐</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* AGGIORNAMENTO AUTOMATICO OGNI 60 SECONDI (1 MINUTO) */
+        setInterval(loadAllNews, 60000);
+        loadAllNews();
+    </script>
+</body>
+</html>
