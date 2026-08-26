@@ -12,11 +12,8 @@
     
     <title>NewsPaper 🐤</title>
 
-    <!-- Manifest integrato per Android/PWA -->
-    <link rel="manifest" href='data:application/json,{"name":"NewsPaper Gaming","short_name":"NewsPaper","start_url":".","display":"standalone","background_color":"#090d16","theme_color":"#090d16","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27512%27 height=%27512%27 viewBox=%270 0 180 180%27%3E%3Crect width=%27180%27 height=%27180%27 rx=%2740%27 fill=%27%235b21b6%27/%3E%3Ctext x=%2750%25%27 y=%2755%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27 font-size=%27105%27%3E🐤%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}'>
-
-    <!-- ICONA HOME SCREEN APPLE (Sfondo Viola + Paperella) -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%235b21b6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='105'%3E🐤%3C/text%3E%3C/svg%3E">
+    <!-- Tag Icona Apple generata dinamicamente in JS -->
+    <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,7 +72,7 @@
             padding-top: calc(env(safe-area-inset-top, 20px) + 8px);
         }
 
-        .header-main { display: flex; justify-space-between; align-items: center; margin-bottom: 10px; }
+        .header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .brand { display: flex; align-items: center; gap: 10px; }
         .brand-logo { background: #5b21b6; border: 1px solid rgba(255,255,255,0.15); width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(91, 33, 182, 0.4); }
         .brand-title { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
@@ -220,7 +217,7 @@
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Sincronizzazione notizie in corso...</p>
+                    <p>Sincronizzazione rapida in corso...</p>
                 </div>
             </div>
         </main>
@@ -239,6 +236,25 @@
     </div>
 
     <script>
+        /* GENERAZIONE ICONA PERFETTA PER HOME SCREEN APPLE (PNG RASTER) */
+        function generateAppleIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 180;
+            canvas.height = 180;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#5b21b6';
+            ctx.fillRect(0, 0, 180, 180);
+
+            ctx.font = '100px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🐤', 90, 98);
+
+            document.getElementById('apple-icon').href = canvas.toDataURL('image/png');
+        }
+        generateAppleIcon();
+
         const FEEDS = [
             { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#dc2626" },
             { name: "Multiplayer.it", url: "https://multiplayer.it/feed/rss/news/", color: "#ea580c" },
@@ -315,24 +331,36 @@
             });
         }
 
-        async function fetchFeed(source) {
+        /* SCANSIONE PARALLELA ULTRA-VELOCE (Prende la prima risposta valida via Promise.any) */
+        async function fetchFeedFast(source) {
             const ts = Date.now();
             const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_t=${ts}`,
-                `https://corsproxy.io/?${encodeURIComponent(source.url)}&_t=${ts}`
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(source.url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(source.url)}&_t=${ts}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_t=${ts}`
             ];
 
-            for (const proxyUrl of proxies) {
+            const fetchProxy = async (proxyUrl) => {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3500); // Max 3.5s timeout
+
                 try {
-                    const res = await fetch(proxyUrl);
+                    const res = await fetch(proxyUrl, { signal: controller.signal });
+                    clearTimeout(timeoutId);
                     if (res.ok) {
                         const text = await res.text();
                         const parsed = parseRawXML(text, source);
                         if (parsed.length > 0) return parsed;
                     }
                 } catch (e) {}
+                throw new Error("Proxy fallito");
+            };
+
+            try {
+                return await Promise.any(proxies.map(fetchProxy));
+            } catch (err) {
+                return [];
             }
-            return [];
         }
 
         function toggleBookmark(e, artId) {
@@ -357,11 +385,11 @@
             const btn = document.getElementById('refresh-btn');
             btn.classList.add('spinning');
             await loadAllNews();
-            setTimeout(() => btn.classList.remove('spinning'), 600);
+            setTimeout(() => btn.classList.remove('spinning'), 500);
         }
 
         async function loadAllNews() {
-            const results = await Promise.all(FEEDS.map(fetchFeed));
+            const results = await Promise.all(FEEDS.map(fetchFeedFast));
             const freshArticles = results.flat();
             
             if (freshArticles.length > 0) {
