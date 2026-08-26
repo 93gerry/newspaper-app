@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v7.3</title>
+    <title>NewsPaper 🐤 v7.5</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -366,7 +366,6 @@
             }).filter(art => art.title && art.link);
         }
 
-        // Metodo di fetch originale e stabile
         async function fetchFeedOriginal(source) {
             const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}`;
             try {
@@ -505,13 +504,11 @@
             });
         }
 
-        // Caricamento iniziale
+        // Avvio iniziale
         loadAllNews();
 
-        // Refresh automatico in background ogni 60 secondi esatti (60000 ms)
-        setInterval(() => {
-            loadAllNews();
-        }, 60000);
+        // Controllo automatico ogni 60 secondi
+        setInterval(loadAllNews, 60000);
     </script>
 </body>
 </html>
