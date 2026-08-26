@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v7.2</title>
+    <title>NewsPaper 🐤 v7.3</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -223,7 +223,7 @@
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Sincronizzazione in tempo reale...</p>
+                    <p>Caricamento notizie...</p>
                 </div>
             </div>
         </main>
@@ -366,29 +366,16 @@
             }).filter(art => art.title && art.link);
         }
 
-        async function fetchFeedFast(source) {
-            const ts = Date.now();
-            const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&t=${ts}`,
-                `https://corsproxy.io/?${encodeURIComponent(source.url)}`
-            ];
-
-            for (let proxyUrl of proxies) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 4000);
-                    const res = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    
-                    if (res.ok) {
-                        let text = await res.text();
-                        if (text && (text.includes("<item>") || text.includes("<rss"))) {
-                            const parsed = parseRawXML(text, source);
-                            if (parsed.length > 0) return parsed;
-                        }
-                    }
-                } catch (e) {}
-            }
+        // Metodo di fetch originale e stabile
+        async function fetchFeedOriginal(source) {
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}`;
+            try {
+                const res = await fetch(proxyUrl);
+                if (res.ok) {
+                    const text = await res.text();
+                    return parseRawXML(text, source);
+                }
+            } catch (e) {}
             return [];
         }
 
@@ -419,7 +406,7 @@
 
         async function loadAllNews() {
             try {
-                const results = await Promise.all(FEEDS.map(feed => fetchFeedFast(feed)));
+                const results = await Promise.all(FEEDS.map(feed => fetchFeedOriginal(feed)));
                 let freshArticles = results.flat();
 
                 if (freshArticles.length > 0) {
@@ -518,12 +505,13 @@
             });
         }
 
+        // Caricamento iniziale
         loadAllNews();
 
-        // Controllo automatico ogni 3 minuti
+        // Refresh automatico in background ogni 60 secondi esatti (60000 ms)
         setInterval(() => {
             loadAllNews();
-        }, 180000);
+        }, 60000);
     </script>
 </body>
 </html>
