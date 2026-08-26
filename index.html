@@ -9,25 +9,24 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#030712">
     
-    <title>NewsPaper 🐤 v11.0 Ultimate</title>
+    <title>NewsPaper 🐤 v12.0</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- STILI GRAPHIC OVERHAUL v11 -->
+    <!-- STILI GRAFICI MINIMAL STREAMLINE -->
     <style>
         :root {
             --bg-base: #030712;
-            --surface-glass: rgba(15, 23, 42, 0.75);
+            --surface-glass: rgba(15, 23, 42, 0.8);
             --surface-card: rgba(15, 23, 42, 0.6);
             --border-glass: rgba(255, 255, 255, 0.08);
             --primary: #f59e0b;
-            --primary-glow: rgba(245, 158, 11, 0.2);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --nav-height: 76px;
+            --nav-height: 54px;
         }
 
         html, body {
@@ -52,62 +51,29 @@
             position: relative;
         }
 
-        /* HEADER PULITO E MINIMALE */
+        /* HEADER SUPER COMPATTO */
         .top-bar { 
             flex-shrink: 0;
             z-index: 800; 
-            background: rgba(3, 7, 18, 0.85); 
+            background: rgba(3, 7, 18, 0.9); 
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-glass); 
-            padding: 12px 16px;
-            padding-top: calc(env(safe-area-inset-top, 20px) + 6px);
+            padding: 8px 12px;
+            padding-top: calc(env(safe-area-inset-top, 16px) + 4px);
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .header-top-row {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 8px;
         }
 
-        .brand { display: flex; align-items: center; gap: 10px; }
         .brand-logo { 
             background: linear-gradient(135deg, #d97706, #b45309); 
-            width: 38px; height: 38px; 
-            border-radius: 12px; 
+            width: 34px; height: 34px; 
+            border-radius: 10px; 
             display: grid; place-items: center; 
-            font-size: 1.2rem; 
-            box-shadow: 0 4px 16px rgba(217, 119, 6, 0.3); 
-        }
-        .brand-title { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
-        .brand-title span { color: var(--primary); }
-
-        .header-actions { display: flex; gap: 8px; align-items: center; }
-
-        .action-icon-btn {
-            background: var(--surface-glass);
-            border: 1px solid var(--border-glass);
-            color: var(--text-main);
-            width: 38px; height: 38px;
-            border-radius: 12px;
-            display: grid; place-items: center;
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
-        .action-icon-btn:active { transform: scale(0.9); }
-        .action-icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-        .action-icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* BARRA DI RICERCA E FILTRO ATTIVO RAPIDO */
-        .search-filter-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
+            font-size: 1.1rem; 
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(217, 119, 6, 0.3); 
         }
 
         .search-box {
@@ -117,98 +83,114 @@
 
         .search-input {
             width: 100%;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-glass);
-            padding: 9px 14px 9px 38px;
-            border-radius: 12px;
+            padding: 7px 12px 7px 34px;
+            border-radius: 10px;
             color: var(--text-main);
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             outline: none;
             font-family: inherit;
         }
         .search-input:focus { border-color: rgba(245, 158, 11, 0.4); }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.85rem; }
+        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.8rem; }
+
+        .action-icon-btn {
+            background: var(--surface-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            display: grid; place-items: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: transform 0.15s;
+        }
+        .action-icon-btn:active { transform: scale(0.9); }
+        .action-icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .action-icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .filter-badge-btn {
             background: rgba(245, 158, 11, 0.12);
             border: 1px solid rgba(245, 158, 11, 0.3);
             color: var(--primary);
-            padding: 0 14px;
-            height: 38px;
-            border-radius: 12px;
-            font-size: 0.78rem;
+            padding: 0 10px;
+            height: 34px;
+            border-radius: 10px;
+            font-size: 0.75rem;
             font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
+            flex-shrink: 0;
         }
 
-        /* CONTENUTO SCORRIBILE PRINCIPALE */
+        /* CONTENUTO SCORRIBILE MASSIMIZZATO */
         .scrollable-content {
             flex-grow: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 16px;
-            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 20px) + 20px);
+            padding: 12px;
+            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 15px) + 20px);
         }
 
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; max-width: 1100px; margin: 0 auto; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; max-width: 1100px; margin: 0 auto; }
 
-        /* NUOVA CARD MODERNA (LAYOUT PULITO, IMMAGINE FULL, TESTO ELEGANTE) */
         .card { 
             background: var(--surface-card); 
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-glass); 
-            border-radius: 20px; 
+            border-radius: 16px; 
             overflow: hidden; 
             display: flex; flex-direction: column; 
             cursor: pointer; color: inherit; text-decoration: none; 
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         .card:active { transform: scale(0.97); }
 
-        .card-cover { width: 100%; height: 165px; position: relative; background: #0b0f19; overflow: hidden; }
+        .card-cover { width: 100%; height: 150px; position: relative; background: #0b0f19; overflow: hidden; }
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-        .card:hover .card-img { transform: scale(1.04); }
 
-        .card-badges { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
+        .card-badges { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
         .source-tag { 
-            background: rgba(3, 7, 18, 0.8); 
-            backdrop-filter: blur(8px); 
-            padding: 4px 10px; 
-            border-radius: 8px; 
-            font-size: 0.65rem; 
+            background: rgba(3, 7, 18, 0.85); 
+            backdrop-filter: blur(6px); 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-size: 0.62rem; 
             font-weight: 800; 
             text-transform: uppercase; 
             border: 1px solid rgba(255,255,255,0.08); 
         }
-        .new-tag { background: #ef4444; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; }
+        .new-tag { background: #ef4444; color: #fff; padding: 3px 6px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; }
 
-        .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-size: 1rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px; color: var(--text-main); letter-spacing: -0.2px; }
-        .card-snippet { font-size: 0.8rem; color: var(--text-sub); line-height: 1.4; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-body { padding: 12px 14px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; color: var(--text-main); letter-spacing: -0.2px; }
+        .card-snippet { font-size: 0.78rem; color: var(--text-sub); line-height: 1.35; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .card-footer { font-size: 0.7rem; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 12px; margin-top: auto; }
+        .card-footer { font-size: 0.68rem; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 10px; margin-top: auto; }
 
         .bookmark-btn { 
             background: rgba(255, 255, 255, 0.04); 
             border: 1px solid var(--border-glass); 
-            width: 34px; height: 34px; 
-            border-radius: 10px; 
-            font-size: 0.95rem; cursor: pointer; 
+            width: 30px; height: 30px; 
+            border-radius: 8px; 
+            font-size: 0.85rem; cursor: pointer; 
             display: grid; place-items: center; 
             opacity: 0.4; filter: grayscale(0.8);
             transition: all 0.2s;
         }
         .bookmark-btn.active { opacity: 1; filter: grayscale(0); background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); }
 
-        /* FLOATING DYNAMIC BOTTOM NAV */
+        /* NAVIGAZIONE IN BASSO ULTRA RIDOTTA (MICRO-ISLAND) */
         .bottom-nav-wrapper {
             position: absolute;
-            bottom: calc(env(safe-area-inset-bottom, 15px) + 10px);
+            bottom: calc(env(safe-area-inset-bottom, 10px) + 6px);
             left: 0; width: 100%;
             display: flex; justify-content: center;
             z-index: 800;
@@ -218,37 +200,37 @@
 
         .bottom-nav { 
             pointer-events: auto;
-            width: 100%; max-width: 340px;
+            width: 100%; max-width: 260px;
             height: var(--nav-height); 
-            background: rgba(15, 23, 42, 0.88); 
-            backdrop-filter: blur(24px); 
-            -webkit-backdrop-filter: blur(24px);
+            background: rgba(15, 23, 42, 0.9); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12); 
-            border-radius: 22px; 
+            border-radius: 18px; 
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            padding: 0 6px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            padding: 0 4px;
         }
 
         .nav-tab-btn { 
-            display: flex; flex-direction: column; align-items: center; gap: 3px; 
+            display: flex; align-items: center; gap: 6px; 
             color: var(--text-sub); background: none; border: none; 
-            font-size: 0.7rem; font-weight: 700; cursor: pointer; 
-            flex-grow: 1; height: 100%; justify-content: center; 
-            border-radius: 16px;
+            font-size: 0.72rem; font-weight: 700; cursor: pointer; 
+            height: 38px; padding: 0 14px;
+            border-radius: 12px;
             transition: all 0.2s;
         }
-        .nav-tab-btn.active { color: var(--primary); background: rgba(245, 158, 11, 0.08); }
-        .nav-tab-btn span:first-child { font-size: 1.2rem; }
+        .nav-tab-btn.active { color: var(--primary); background: rgba(245, 158, 11, 0.1); }
+        .nav-tab-btn span:first-child { font-size: 1rem; }
 
-        /* DRAWER MODALE DI NAVIGAZIONE FILTRI (A SCOMPARSA) */
+        /* DRAWER MODALE FILTRI */
         .drawer-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(6px);
             z-index: 999;
             opacity: 0;
             pointer-events: none;
@@ -261,38 +243,38 @@
             bottom: 0; left: 0; width: 100%;
             background: #0b0f19;
             border-top: 1px solid var(--border-glass);
-            border-radius: 28px 28px 0 0;
-            padding: 24px 20px calc(env(safe-area-inset-bottom, 20px) + 24px) 20px;
+            border-radius: 24px 24px 0 0;
+            padding: 20px 16px calc(env(safe-area-inset-bottom, 20px) + 20px) 16px;
             z-index: 1000;
             transform: translateY(100%);
-            transition: transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1);
-            max-height: 85vh;
+            transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+            max-height: 80vh;
             overflow-y: auto;
         }
         .drawer-overlay.open .drawer-panel { transform: translateY(0); }
 
         .drawer-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
-        .drawer-title { font-size: 1.1rem; font-weight: 800; color: #fff; }
-        .drawer-close { background: rgba(255,255,255,0.08); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; }
+        .drawer-title { font-size: 1rem; font-weight: 800; color: #fff; }
+        .drawer-close { background: rgba(255,255,255,0.08); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 0.85rem; cursor: pointer; }
 
-        .drawer-section-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-sub); margin-bottom: 10px; margin-top: 16px; }
+        .drawer-section-title { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-sub); margin-bottom: 8px; margin-top: 14px; }
         
         .drawer-chips-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
 
         .drawer-chip {
             background: var(--surface-glass);
             border: 1px solid var(--border-glass);
             color: var(--text-sub);
-            padding: 12px 14px;
-            border-radius: 14px;
-            font-size: 0.8rem;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 0.78rem;
             font-weight: 700;
             text-align: left;
             cursor: pointer;
@@ -302,8 +284,8 @@
         .drawer-chip.active { background: var(--primary); color: #030712; border-color: transparent; }
         .drawer-chip.full-width { grid-column: span 2; }
 
-        .status-box { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-sub); }
-        .spinner { width: 38px; height: 38px; border: 3px solid var(--border-glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+        .status-box { grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--text-sub); }
+        .spinner { width: 34px; height: 34px; border: 3px solid var(--border-glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px auto; }
     </style>
 </head>
 <body>
@@ -311,28 +293,20 @@
     <div class="app-layout">
         
         <header class="top-bar">
-            <div class="header-top-row">
-                <div class="brand">
-                    <div class="brand-logo">🐤</div>
-                    <div class="brand-title">News<span>Paper</span></div>
-                </div>
-                
-                <div class="header-actions">
-                    <button class="action-icon-btn" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
-                        <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
-                    </button>
-                </div>
+            <div class="brand-logo">🐤</div>
+            
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" class="search-input" placeholder="Cerca..." oninput="renderArticles()">
             </div>
 
-            <div class="search-filter-row">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="search-input" class="search-input" placeholder="Cerca notizie..." oninput="renderArticles()">
-                </div>
-                <button class="filter-badge-btn" onclick="toggleDrawer(true)">
-                    <span>⚙️ Filtri</span>
-                </button>
-            </div>
+            <button class="filter-badge-btn" onclick="toggleDrawer(true)">
+                <span>⚙️ Filtri</span>
+            </button>
+
+            <button class="action-icon-btn" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
+                <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
+            </button>
         </header>
 
         <main class="scrollable-content">
@@ -352,14 +326,14 @@
                 </button>
                 <button class="nav-tab-btn" id="nav-saved" onclick="switchTab('saved')">
                     <span>⭐</span>
-                    <span>Preferiti</span>
+                    <span>Salvati</span>
                 </button>
             </nav>
         </div>
 
     </div>
 
-    <!-- DRAWER FILTRI A COMPARSA MODERNO -->
+    <!-- DRAWER FILTRI -->
     <div class="drawer-overlay" id="filter-drawer" onclick="if(event.target === this) toggleDrawer(false)">
         <div class="drawer-panel">
             <div class="drawer-header">
@@ -414,7 +388,7 @@
         };
 
         let allArticles = [];
-        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v11') || '[]');
+        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v12') || '[]');
         let currentTab = 'home';
         let filterType = 'all'; 
         let filterValue = 'all';
@@ -484,7 +458,7 @@
                     sourceColor: source.color,
                     title: cleanText(title),
                     link: link,
-                    snippet: cleanText(description).slice(0, 120) + "...",
+                    snippet: cleanText(description).slice(0, 110) + "...",
                     image: imgUrl,
                     date: new Date(pubDate)
                 };
@@ -523,7 +497,7 @@
             if (index > -1) savedArticles.splice(index, 1);
             else savedArticles.push(article);
 
-            localStorage.setItem('np_bookmarks_v11', JSON.stringify(savedArticles));
+            localStorage.setItem('np_bookmarks_v12', JSON.stringify(savedArticles));
             renderArticles();
         }
 
@@ -587,8 +561,8 @@
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="status-box">
-                        <p>${currentTab === 'saved' ? 'Nessun articolo nei preferiti.' : 'Nessun articolo trovato con questi filtri...'}</p>
-                        <button onclick="manualRefresh()" style="margin-top:14px; padding: 10px 20px; background:var(--primary); border:none; border-radius:12px; font-weight:800; color:#030712; cursor:pointer;">Aggiorna Ora</button>
+                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato.' : 'Nessun articolo trovato...'}</p>
+                        <button onclick="manualRefresh()" style="margin-top:12px; padding: 8px 16px; background:var(--primary); border:none; border-radius:10px; font-weight:800; color:#030712; cursor:pointer;">Aggiorna Ora</button>
                     </div>`;
                 return;
             }
@@ -613,7 +587,7 @@
                             ${showNewBadge ? `<span class="new-tag">NEW</span>` : ''}
                         </div>
                     </div>` : `
-                    <div class="card-badges" style="position:relative; top:0; left:0; padding: 14px 14px 0 14px;">
+                    <div class="card-badges" style="position:relative; top:0; left:0; padding: 12px 12px 0 12px;">
                         <span class="source-tag" style="color: ${art.sourceColor}">${art.source}</span>
                         ${showNewBadge ? `<span class="new-tag">NEW</span>` : ''}
                     </div>`;
