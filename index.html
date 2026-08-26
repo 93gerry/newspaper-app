@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v4</title>
+    <title>NewsPaper 🐤 v6</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,7 +79,8 @@
         
         .header-controls { display: flex; align-items: center; gap: 8px; }
         
-        .btn-push { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); color: var(--primary); width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem; }
+        .btn-push { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); color: var(--primary); width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+        .btn-push svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
         .btn-push:active { transform: scale(0.92); }
 
         .limit-wrapper { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; color: var(--text-sub); }
@@ -174,7 +175,9 @@
                 </div>
                 
                 <div class="header-controls">
-                    <button class="btn-push" id="push-btn" onclick="togglePushNotifications()" title="Attiva Notifiche Push">🔔</button>
+                    <button class="btn-push" id="push-btn" onclick="togglePushNotifications()" title="Attiva Notifiche Push">
+                        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </button>
                     
                     <div class="limit-wrapper">
                         <span>Limit:</span>
@@ -277,7 +280,14 @@
             nintendo: ["nintendo", "switch", "mario", "zelda", "pokemon"]
         };
 
-        const DEFAULT_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%23131b2e'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-family='sans-serif' font-size='16'%3ENewsPaper 🐤%3C/text%3E%3C/svg%3E";
+        // Immagini reali di anteprima di riserva basate su sfondi gaming di pubblico dominio/Unsplash
+        const FALLBACK_IMAGES = [
+            "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
+            "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80"
+        ];
 
         let allArticles = [];
         let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks') || '[]');
@@ -347,29 +357,38 @@
             return isNaN(d.getTime()) ? new Date() : d;
         }
 
-        function parseRawXML(xmlString, source) {
+        function parseRawXML(xmlString, source, indexOffset) {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlString, "text/xml");
             const items = Array.from(xmlDoc.querySelectorAll("item"));
 
-            return items.map(item => {
+            return items.map((item, idx) => {
                 const title = item.querySelector("title")?.textContent || "";
                 const link = item.querySelector("link")?.textContent || "";
                 const description = item.querySelector("description")?.textContent || "";
                 const pubDate = item.querySelector("pubDate")?.textContent || "";
                 const guid = item.querySelector("guid")?.textContent || link;
 
-                let imgUrl = DEFAULT_IMG;
+                let imgUrl = "";
                 const mediaContent = item.getElementsByTagName("media:content")[0];
                 const enclosure = item.querySelector("enclosure");
+                const thumbnail = item.getElementsByTagName("media:thumbnail")[0];
+
                 if (mediaContent && mediaContent.getAttribute("url")) {
                     imgUrl = mediaContent.getAttribute("url");
                 } else if (enclosure && enclosure.getAttribute("url")) {
                     imgUrl = enclosure.getAttribute("url");
+                } else if (thumbnail && thumbnail.getAttribute("url")) {
+                    imgUrl = thumbnail.getAttribute("url");
                 } else {
                     const doc = new DOMParser().parseFromString(description, 'text/html');
                     const img = doc.querySelector('img');
-                    if (img) imgUrl = img.src;
+                    if (img && img.src) imgUrl = img.src;
+                }
+
+                // Se l'articolo non ha un'immagine valida, assegniamo un'immagine di anteprima tematica a rotazione
+                if (!imgUrl || imgUrl.startsWith("data:")) {
+                    imgUrl = FALLBACK_IMAGES[(indexOffset + idx) % FALLBACK_IMAGES.length];
                 }
 
                 return {
@@ -385,7 +404,7 @@
             });
         }
 
-        async function fetchFeedFast(source) {
+        async function fetchFeedFast(source, indexOffset) {
             const ts = Date.now();
             const proxies = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_t=${ts}`,
@@ -401,7 +420,7 @@
                     clearTimeout(timeoutId);
                     if (res.ok) {
                         const text = await res.text();
-                        const parsed = parseRawXML(text, source);
+                        const parsed = parseRawXML(text, source, indexOffset);
                         if (parsed.length > 0) return parsed;
                     }
                 } catch (e) {}
@@ -409,60 +428,42 @@
             return [];
         }
 
-        // Dati di riserva (Fallback) nel caso in cui i server RSS blocchino le richieste
         function getFallbackArticles() {
-            return [
-                {
-                    id: "fb_1",
-                    source: "IGN Italia",
-                    sourceColor: "#dc2626",
-                    title: "Le novità più importanti della settimana nel mondo dei videogiochi",
-                    link: "https://it.ign.com",
-                    snippet: "Un riepilogo completo di tutti gli annunci principali, le uscite e le recensioni pubblicate dai nostri redattori.",
-                    image: DEFAULT_IMG,
-                    date: new Date()
-                },
-                {
-                    id: "fb_2",
-                    source: "Multiplayer.it",
-                    sourceColor: "#ea580c",
-                    title: "PlayStation 5 e Xbox Series X: analisi dei prossimi giochi in arrivo",
-                    link: "https://multiplayer.it",
-                    snippet: "Analizziamo le performance e le date di lancio dei titoli più attesi della stagione videoludica corrente.",
-                    image: DEFAULT_IMG,
-                    date: new Date(Date.now() - 3600000)
-                },
-                {
-                    id: "fb_3",
-                    source: "Everyeye.it",
-                    sourceColor: "#2563eb",
-                    title: "Nintendo Switch: i titoli imperdibili da giocare assolutamente",
-                    link: "https://www.everyeye.it",
-                    snippet: "Una selezione speciale dei migliori giochi disponibili sulla console ibrida Nintendo.",
-                    image: DEFAULT_IMG,
-                    date: new Date(Date.now() - 7200000)
-                },
-                {
-                    id: "fb_4",
-                    source: "Playerinside",
-                    sourceColor: "#db2777",
-                    title: "Speciale Videogiochi e Hardware: le ultime tendenze del mercato",
-                    link: "https://www.everyeye.it",
-                    snippet: "Approfondimenti e discussioni sulle ultime novità tecnologiche e hardware per PC e console.",
-                    image: DEFAULT_IMG,
-                    date: new Date(Date.now() - 10800000)
-                },
-                {
-                    id: "fb_5",
-                    source: "QDSS",
-                    sourceColor: "#8b5cf6",
-                    title: "Gameplay, live e recensioni senza peli sulla lingua",
-                    link: "https://it.ign.com",
-                    snippet: "Tutto quello che c'è da sapere sulle ultime uscite videoludiche commentate in tempo reale.",
-                    image: DEFAULT_IMG,
-                    date: new Date(Date.now() - 14400000)
-                }
+            const sources = [
+                { name: "IGN Italia", color: "#dc2626" },
+                { name: "Multiplayer.it", color: "#ea580c" },
+                { name: "Everyeye.it", color: "#2563eb" },
+                { name: "Playerinside", color: "#db2777" },
+                { name: "QDSS", color: "#8b5cf6" }
             ];
+
+            const topics = [
+                { t: "Le novità più importanti della settimana nel mondo dei videogiochi", p: "Analisi e approfondimenti sulle uscite più calde per PC e console." },
+                { t: "PlayStation 5 e Xbox Series X: analisi dei prossimi giochi in arrivo", p: "Tutti i dettagli sulle performance tecniche e le date di lancio." },
+                { t: "Nintendo Switch: i titoli imperdibili da giocare assolutamente", p: "Una selezione speciale dei migliori giochi disponibili sulla console ibrida." },
+                { t: "Speciale Hardware: le ultime tendenze di schede video e configurazioni PC", p: "Cosa conviene acquistare per assemblare un PC da gaming di fascia alta." },
+                { t: "Gameplay, live e recensioni senza peli sulla lingua", p: "Commenti in tempo reale sulle ultime uscite del mercato videoludico." }
+            ];
+
+            let list = [];
+            let idCounter = 1;
+            for (let i = 0; i < 6; i++) {
+                sources.forEach((src, sIdx) => {
+                    let topic = topics[(idCounter - 1) % topics.length];
+                    list.push({
+                        id: `fb_${idCounter}`,
+                        source: src.name,
+                        sourceColor: src.color,
+                        title: `${topic.t} #${idCounter}`,
+                        link: "https://it.ign.com",
+                        snippet: topic.p,
+                        image: FALLBACK_IMAGES[(idCounter - 1) % FALLBACK_IMAGES.length],
+                        date: new Date(Date.now() - (idCounter * 1800000))
+                    });
+                    idCounter++;
+                });
+            }
+            return list;
         }
 
         function toggleBookmark(e, artId) {
@@ -491,12 +492,11 @@
         }
 
         async function loadAllNews() {
-            const results = await Promise.all(FEEDS.map(fetchFeedFast));
+            const results = await Promise.all(FEEDS.map((feed, idx) => fetchFeedFast(feed, idx * 5)));
             let freshArticles = results.flat();
             
-            // Se i feed remoti falliscono o sono vuoti, usiamo i dati di riserva
-            if (freshArticles.length === 0) {
-                freshArticles = getFallbackArticles();
+            if (freshArticles.length < 5) {
+                freshArticles = [...freshArticles, ...getFallbackArticles()];
             }
 
             allArticles = freshArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -567,7 +567,7 @@
 
                 card.innerHTML = `
                     <div class="card-cover">
-                        <img class="card-img" src="${art.image}" alt="" onerror="this.src='${DEFAULT_IMG}'" loading="lazy">
+                        <img class="card-img" src="${art.image}" alt="" onerror="this.src='https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80'" loading="lazy">
                         <div class="badge-container">
                             <span class="badge-source" style="color: ${art.sourceColor}">${art.source}</span>
                             ${showNewBadge ? `<span class="badge-new">NEW</span>` : ''}
