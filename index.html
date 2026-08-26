@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v6.5</title>
+    <title>NewsPaper 🐤 v6.7</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -224,7 +224,7 @@
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Sincronizzazione in corso...</p>
+                    <p>Caricamento contenuti...</p>
                 </div>
             </div>
         </main>
@@ -281,14 +281,14 @@
 
         async function togglePushNotifications() {
             if (!("Notification" in window)) {
-                alert("Per attivare le notifiche su iPhone, aggiungi la pagina alla schermata Home.");
+                alert("Per attivare le notifiche, aggiungi la pagina alla schermata Home.");
                 return;
             }
 
             try {
                 let permission = Notification.permission;
                 if (permission === "granted") {
-                    alert("Le notifiche push sono già attive per NewsPaper! 🐤");
+                    alert("Le notifiche push sono già attive! 🐤");
                 } else if (permission !== "denied") {
                     permission = await Notification.requestPermission();
                     if (permission === "granted") {
@@ -298,27 +298,7 @@
                         });
                     }
                 }
-            } catch (err) {
-                alert("Aggiungi prima l'app alla schermata Home per abilitare le notifiche.");
-            }
-        }
-
-        function checkAndNotifyNewArticles(articles) {
-            if (!("Notification" in window) || Notification.permission !== "granted") return;
-            if (articles.length === 0) return;
-
-            const latest = articles[0];
-            if (lastNotifiedId !== latest.id) {
-                lastNotifiedId = latest.id;
-                localStorage.setItem('np_last_notified', latest.id);
-
-                try {
-                    new Notification(`Nuova notizia da ${latest.source}! 🐤`, {
-                        body: latest.title,
-                        icon: document.getElementById('apple-icon').href
-                    });
-                } catch (e) {}
-            }
+            } catch (err) {}
         }
 
         function cleanText(text) {
@@ -348,14 +328,10 @@
                 
                 let link = "";
                 const linkEl = item.querySelector("link");
-                if (linkEl) {
-                    link = linkEl.textContent.trim();
-                }
+                if (linkEl) link = linkEl.textContent.trim();
                 if (!link || link.startsWith("<")) {
                     const guidEl = item.querySelector("guid");
-                    if (guidEl && guidEl.textContent.startsWith("http")) {
-                        link = guidEl.textContent.trim();
-                    }
+                    if (guidEl && guidEl.textContent.startsWith("http")) link = guidEl.textContent.trim();
                 }
 
                 const description = item.querySelector("description")?.textContent || "";
@@ -381,9 +357,7 @@
                     if (rawHtmlToScan) {
                         const docHtml = new DOMParser().parseFromString(rawHtmlToScan, 'text/html');
                         const img = docHtml.querySelector('img');
-                        if (img && img.src && img.src.startsWith('http')) {
-                            imgUrl = img.src;
-                        }
+                        if (img && img.src && img.src.startsWith('http')) imgUrl = img.src;
                     }
                 }
 
@@ -404,28 +378,19 @@
             const ts = Date.now();
             const proxies = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_t=${ts}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(source.url)}`,
                 `https://corsproxy.io/?${encodeURIComponent(source.url)}`
             ];
 
             for (let proxyUrl of proxies) {
                 try {
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    const timeoutId = setTimeout(() => controller.abort(), 4000);
                     const res = await fetch(proxyUrl, { signal: controller.signal });
                     clearTimeout(timeoutId);
                     
                     if (res.ok) {
-                        let text = "";
-                        const contentType = res.headers.get("content-type") || "";
-                        if (contentType.includes("application/json")) {
-                            const data = await res.json().catch(() => null);
-                            text = data && data.contents ? data.contents : "";
-                        } else {
-                            text = await res.text();
-                        }
-                        
-                        if (text && text.includes("<item>")) {
+                        let text = await res.text();
+                        if (text && (text.includes("<item>") || text.includes("<rss"))) {
                             const parsed = parseRawXML(text, source);
                             if (parsed.length > 0) return parsed;
                         }
@@ -435,35 +400,36 @@
             return [];
         }
 
-        function getEmergencyArticles() {
+        function getCuratedArticles() {
+            // Dati aggiornati di riserva per garantire l'apertura immediata dell'app
             return [
                 {
-                    id: "em_1",
+                    id: "cur_1",
                     source: "IGN Italia",
                     sourceColor: "#dc2626",
-                    title: "Le ultime novità dal mondo dei videogiochi e delle console",
+                    title: "Le ultime uscite e recensioni dal mondo dei videogiochi",
                     link: "https://it.ign.com",
-                    snippet: "Tutti gli aggiornamenti in tempo reale sulle uscite più calde per PC, PlayStation, Xbox e Nintendo.",
+                    snippet: "Aggiornamenti quotidiani su PC, console e produzioni videoludiche di rilievo.",
                     image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600",
                     date: new Date()
                 },
                 {
-                    id: "em_2",
+                    id: "cur_2",
                     source: "Multiplayer.it",
                     sourceColor: "#ea580c",
-                    title: "Speciali, recensioni e anteprime dei giochi del momento",
+                    title: "Speciali, anteprime e prove su strada hardware e software",
                     link: "https://multiplayer.it",
-                    snippet: "Approfondimenti sulle produzioni videoludiche più importanti e sulle novità hardware.",
+                    snippet: "Approfondimenti dedicati alle piattaforme di gioco più diffuse e ai titoli in arrivo.",
                     image: "https://images.unsplash.com/photo-1612287233202-b51a3ed615c8?w=600",
                     date: new Date(Date.now() - 3600000)
                 },
                 {
-                    id: "em_3",
+                    id: "cur_3",
                     source: "Everyeye.it",
                     sourceColor: "#2563eb",
-                    title: "Cinema, serie TV, anime e videogiochi in primo piano",
+                    title: "Tendenze, cinema, serie TV e intrattenimento digitale",
                     link: "https://www.everyeye.it",
-                    snippet: "Le notizie e le recensioni più importanti dal mondo dell'intrattenimento digitale.",
+                    snippet: "Notizie e recensioni dal panorama dell'intrattenimento multimediale.",
                     image: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600",
                     date: new Date(Date.now() - 7200000)
                 }
@@ -500,14 +466,15 @@
                 const results = await Promise.all(FEEDS.map(feed => fetchFeedFast(feed)));
                 let freshArticles = results.flat();
 
-                if (freshArticles.length === 0) {
-                    freshArticles = getEmergencyArticles();
+                if (freshArticles.length > 0) {
+                    allArticles = freshArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+                } else if (allArticles.length === 0) {
+                    allArticles = getCuratedArticles();
                 }
-
-                allArticles = freshArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-                checkAndNotifyNewArticles(allArticles);
             } catch (err) {
-                allArticles = getEmergencyArticles();
+                if (allArticles.length === 0) {
+                    allArticles = getCuratedArticles();
+                }
             }
             renderArticles();
         }
@@ -555,8 +522,8 @@
             if (limitedList.length === 0) {
                 grid.innerHTML = `
                     <div class="status-box">
-                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Nessun articolo disponibile al momento.'}</p>
-                        <button onclick="manualRefresh()" style="margin-top:10px; padding: 6px 12px; background:var(--primary); border:none; border-radius:8px; font-weight:700; color:#000; cursor:pointer;">Riprova</button>
+                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Nessun articolo trovato.'}</p>
+                        <button onclick="manualRefresh()" style="margin-top:10px; padding: 6px 12px; background:var(--primary); border:none; border-radius:8px; font-weight:700; color:#000; cursor:pointer;">Aggiorna</button>
                     </div>`;
                 return;
             }
@@ -601,7 +568,6 @@
             });
         }
 
-        setInterval(loadAllNews, 60000);
         loadAllNews();
     </script>
 </body>
