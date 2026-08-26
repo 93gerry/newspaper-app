@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v6.2</title>
+    <title>NewsPaper 🐤 v6.3</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -349,7 +349,7 @@
             return items.map((item) => {
                 const title = item.querySelector("title")?.textContent || "";
                 
-                // Estrazione corretta del link
+                // Estrazione sicura del link testuale
                 let link = "";
                 const linkEl = item.querySelector("link");
                 if (linkEl) {
@@ -363,11 +363,14 @@
                 }
 
                 const description = item.querySelector("description")?.textContent || "";
+                const contentEncoded = item.getElementsByTagNameNS("*", "encoded")[0]?.textContent || "";
                 const pubDate = item.querySelector("pubDate")?.textContent || "";
                 const guid = item.querySelector("guid")?.textContent || link;
 
-                // Estrazione accurata delle immagini
+                // Estrazione avanzata e mirata delle immagini di anteprima
                 let imgUrl = "";
+                
+                // 1. Controllo tag media:content o enclosure standard
                 const mediaContent = item.getElementsByTagName("media:content")[0];
                 const enclosure = item.querySelector("enclosure");
                 const thumbnail = item.getElementsByTagName("media:thumbnail")[0];
@@ -378,10 +381,18 @@
                     imgUrl = enclosure.getAttribute("url");
                 } else if (thumbnail && thumbnail.getAttribute("url")) {
                     imgUrl = thumbnail.getAttribute("url");
-                } else {
-                    const doc = new DOMParser().parseFromString(description, 'text/html');
-                    const img = doc.querySelector('img');
-                    if (img && img.src) imgUrl = img.src;
+                } 
+                
+                // 2. Controllo all'interno del contenuto HTML (description o content:encoded)
+                if (!imgUrl) {
+                    const rawHtmlToScan = contentEncoded || description;
+                    if (rawHtmlToScan) {
+                        const docHtml = new DOMParser().parseFromString(rawHtmlToScan, 'text/html');
+                        const img = docHtml.querySelector('img');
+                        if (img && img.src && img.src.startsWith('http')) {
+                            imgUrl = img.src;
+                        }
+                    }
                 }
 
                 return {
@@ -549,4 +560,3 @@
     </script>
 </body>
 </html>
-
