@@ -9,24 +9,24 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#030712">
     
-    <title>NewsPaper 🐤 v12.0</title>
+    <title>NewsPaper 🐤 v13.0 Precision</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- STILI GRAFICI MINIMAL STREAMLINE -->
+    <!-- STILI GRAFICI PRECISION REFINED v13 -->
     <style>
         :root {
             --bg-base: #030712;
-            --surface-glass: rgba(15, 23, 42, 0.8);
+            --surface-glass: rgba(15, 23, 42, 0.85);
             --surface-card: rgba(15, 23, 42, 0.6);
             --border-glass: rgba(255, 255, 255, 0.08);
             --primary: #f59e0b;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --nav-height: 54px;
+            --nav-height: 46px;
         }
 
         html, body {
@@ -55,25 +55,25 @@
         .top-bar { 
             flex-shrink: 0;
             z-index: 800; 
-            background: rgba(3, 7, 18, 0.9); 
+            background: rgba(3, 7, 18, 0.92); 
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-glass); 
-            padding: 8px 12px;
-            padding-top: calc(env(safe-area-inset-top, 16px) + 4px);
+            padding: 6px 10px;
+            padding-top: calc(env(safe-area-inset-top, 14px) + 3px);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .brand-logo { 
-            background: linear-gradient(135deg, #d97706, #b45309); 
-            width: 34px; height: 34px; 
-            border-radius: 10px; 
+            background: linear-gradient(135deg, #7c3aed, #5b21b6); 
+            width: 32px; height: 32px; 
+            border-radius: 9px; 
             display: grid; place-items: center; 
-            font-size: 1.1rem; 
+            font-size: 1rem; 
             flex-shrink: 0;
-            box-shadow: 0 3px 10px rgba(217, 119, 6, 0.3); 
+            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3); 
         }
 
         .search-box {
@@ -85,30 +85,31 @@
             width: 100%;
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-glass);
-            padding: 7px 12px 7px 34px;
-            border-radius: 10px;
+            padding: 6px 10px 6px 32px;
+            border-radius: 9px;
             color: var(--text-main);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             outline: none;
             font-family: inherit;
         }
         .search-input:focus { border-color: rgba(245, 158, 11, 0.4); }
-        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.8rem; }
+        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.75rem; }
 
         .action-icon-btn {
             background: var(--surface-glass);
             border: 1px solid var(--border-glass);
             color: var(--text-main);
-            width: 34px; height: 34px;
-            border-radius: 10px;
+            width: 32px; height: 32px;
+            border-radius: 9px;
             display: grid; place-items: center;
             cursor: pointer;
             flex-shrink: 0;
             transition: transform 0.15s;
         }
         .action-icon-btn:active { transform: scale(0.9); }
-        .action-icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .action-icon-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
         .action-icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
+        .action-icon-btn.active-notif { color: var(--primary); border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.1); }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -116,36 +117,38 @@
             background: rgba(245, 158, 11, 0.12);
             border: 1px solid rgba(245, 158, 11, 0.3);
             color: var(--primary);
-            padding: 0 10px;
-            height: 34px;
-            border-radius: 10px;
-            font-size: 0.75rem;
+            padding: 0 9px;
+            height: 32px;
+            border-radius: 9px;
+            font-size: 0.7rem;
             font-weight: 800;
+            text-transform: uppercase;
             cursor: pointer;
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             flex-shrink: 0;
         }
+        .filter-badge-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
         /* CONTENUTO SCORRIBILE MASSIMIZZATO */
         .scrollable-content {
             flex-grow: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 12px;
-            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 15px) + 20px);
+            padding: 10px;
+            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 12px) + 16px);
         }
 
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; max-width: 1100px; margin: 0 auto; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; max-width: 1100px; margin: 0 auto; }
 
         .card { 
             background: var(--surface-card); 
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-glass); 
-            border-radius: 16px; 
+            border-radius: 14px; 
             overflow: hidden; 
             display: flex; flex-direction: column; 
             cursor: pointer; color: inherit; text-decoration: none; 
@@ -153,44 +156,44 @@
         }
         .card:active { transform: scale(0.97); }
 
-        .card-cover { width: 100%; height: 150px; position: relative; background: #0b0f19; overflow: hidden; }
+        .card-cover { width: 100%; height: 140px; position: relative; background: #0b0f19; overflow: hidden; }
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
 
-        .card-badges { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
+        .card-badges { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
         .source-tag { 
             background: rgba(3, 7, 18, 0.85); 
             backdrop-filter: blur(6px); 
-            padding: 3px 8px; 
-            border-radius: 6px; 
-            font-size: 0.62rem; 
+            padding: 3px 7px; 
+            border-radius: 5px; 
+            font-size: 0.6rem; 
             font-weight: 800; 
             text-transform: uppercase; 
             border: 1px solid rgba(255,255,255,0.08); 
         }
-        .new-tag { background: #ef4444; color: #fff; padding: 3px 6px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; }
+        .new-tag { background: #ef4444; color: #fff; padding: 2px 5px; border-radius: 5px; font-size: 0.58rem; font-weight: 800; }
 
-        .card-body { padding: 12px 14px; display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-size: 0.95rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; color: var(--text-main); letter-spacing: -0.2px; }
-        .card-snippet { font-size: 0.78rem; color: var(--text-sub); line-height: 1.35; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-body { padding: 10px 12px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 0.9rem; font-weight: 700; line-height: 1.25; margin-bottom: 5px; color: var(--text-main); letter-spacing: -0.2px; }
+        .card-snippet { font-size: 0.75rem; color: var(--text-sub); line-height: 1.3; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .card-footer { font-size: 0.68rem; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 10px; margin-top: auto; }
+        .card-footer { font-size: 0.65rem; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 8px; margin-top: auto; }
 
         .bookmark-btn { 
             background: rgba(255, 255, 255, 0.04); 
             border: 1px solid var(--border-glass); 
-            width: 30px; height: 30px; 
-            border-radius: 8px; 
-            font-size: 0.85rem; cursor: pointer; 
+            width: 28px; height: 28px; 
+            border-radius: 7px; 
+            font-size: 0.8rem; cursor: pointer; 
             display: grid; place-items: center; 
             opacity: 0.4; filter: grayscale(0.8);
             transition: all 0.2s;
         }
         .bookmark-btn.active { opacity: 1; filter: grayscale(0); background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); }
 
-        /* NAVIGAZIONE IN BASSO ULTRA RIDOTTA (MICRO-ISLAND) */
+        /* NAVIGAZIONE IN BASSO MICRO-COMPATTA */
         .bottom-nav-wrapper {
             position: absolute;
-            bottom: calc(env(safe-area-inset-bottom, 10px) + 6px);
+            bottom: calc(env(safe-area-inset-bottom, 8px) + 4px);
             left: 0; width: 100%;
             display: flex; justify-content: center;
             z-index: 800;
@@ -200,30 +203,30 @@
 
         .bottom-nav { 
             pointer-events: auto;
-            width: 100%; max-width: 260px;
+            width: 100%; max-width: 230px;
             height: var(--nav-height); 
-            background: rgba(15, 23, 42, 0.9); 
+            background: rgba(15, 23, 42, 0.92); 
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.12); 
-            border-radius: 18px; 
+            border-radius: 14px; 
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-            padding: 0 4px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            padding: 0 3px;
         }
 
         .nav-tab-btn { 
-            display: flex; align-items: center; gap: 6px; 
+            display: flex; align-items: center; gap: 5px; 
             color: var(--text-sub); background: none; border: none; 
-            font-size: 0.72rem; font-weight: 700; cursor: pointer; 
-            height: 38px; padding: 0 14px;
-            border-radius: 12px;
+            font-size: 0.65rem; font-weight: 800; text-transform: uppercase; cursor: pointer; 
+            height: 34px; padding: 0 10px;
+            border-radius: 10px;
             transition: all 0.2s;
         }
         .nav-tab-btn.active { color: var(--primary); background: rgba(245, 158, 11, 0.1); }
-        .nav-tab-btn span:first-child { font-size: 1rem; }
+        .nav-tab-btn span:first-child { font-size: 0.9rem; }
 
         /* DRAWER MODALE FILTRI */
         .drawer-overlay {
@@ -243,8 +246,8 @@
             bottom: 0; left: 0; width: 100%;
             background: #0b0f19;
             border-top: 1px solid var(--border-glass);
-            border-radius: 24px 24px 0 0;
-            padding: 20px 16px calc(env(safe-area-inset-bottom, 20px) + 20px) 16px;
+            border-radius: 22px 22px 0 0;
+            padding: 18px 14px calc(env(safe-area-inset-bottom, 16px) + 16px) 14px;
             z-index: 1000;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
@@ -255,27 +258,28 @@
 
         .drawer-header {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
-        .drawer-title { font-size: 1rem; font-weight: 800; color: #fff; }
-        .drawer-close { background: rgba(255,255,255,0.08); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 0.85rem; cursor: pointer; }
+        .drawer-title { font-size: 0.95rem; font-weight: 800; text-transform: uppercase; color: #fff; }
+        .drawer-close { background: rgba(255,255,255,0.08); border: none; color: #fff; width: 26px; height: 26px; border-radius: 50%; font-size: 0.8rem; cursor: pointer; }
 
-        .drawer-section-title { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-sub); margin-bottom: 8px; margin-top: 14px; }
+        .drawer-section-title { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-sub); margin-bottom: 6px; margin-top: 12px; }
         
         .drawer-chips-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
         .drawer-chip {
             background: var(--surface-glass);
             border: 1px solid var(--border-glass);
             color: var(--text-sub);
-            padding: 10px 12px;
-            border-radius: 12px;
-            font-size: 0.78rem;
-            font-weight: 700;
+            padding: 9px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
             text-align: left;
             cursor: pointer;
             transition: all 0.2s;
@@ -284,8 +288,8 @@
         .drawer-chip.active { background: var(--primary); color: #030712; border-color: transparent; }
         .drawer-chip.full-width { grid-column: span 2; }
 
-        .status-box { grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--text-sub); }
-        .spinner { width: 34px; height: 34px; border: 3px solid var(--border-glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px auto; }
+        .status-box { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-sub); }
+        .spinner { width: 30px; height: 30px; border: 3px solid var(--border-glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px auto; }
     </style>
 </head>
 <body>
@@ -301,7 +305,12 @@
             </div>
 
             <button class="filter-badge-btn" onclick="toggleDrawer(true)">
-                <span>⚙️ Filtri</span>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .69.41 1.32 1.03 1.51h.09a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09c-.62.19-1.03.82-1.03 1.51z"/></svg>
+                <span>FILTRI</span>
+            </button>
+
+            <button class="action-icon-btn" id="notif-btn" onclick="toggleNotifications()" title="Notifiche">
+                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
 
             <button class="action-icon-btn" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
@@ -322,11 +331,11 @@
             <nav class="bottom-nav">
                 <button class="nav-tab-btn active" id="nav-home" onclick="switchTab('home')">
                     <span>📰</span>
-                    <span>Feed</span>
+                    <span>FEED</span>
                 </button>
                 <button class="nav-tab-btn" id="nav-saved" onclick="switchTab('saved')">
                     <span>⭐</span>
-                    <span>Salvati</span>
+                    <span>PREFERITI</span>
                 </button>
             </nav>
         </div>
@@ -337,24 +346,24 @@
     <div class="drawer-overlay" id="filter-drawer" onclick="if(event.target === this) toggleDrawer(false)">
         <div class="drawer-panel">
             <div class="drawer-header">
-                <h3 class="drawer-title">Filtri e Piattaforme</h3>
+                <h3 class="drawer-title">FILTRI E PIATTAFORME</h3>
                 <button class="drawer-close" onclick="toggleDrawer(false)">✕</button>
             </div>
 
-            <div class="drawer-section-title">Siti Web</div>
+            <div class="drawer-section-title">SITI WEB</div>
             <div class="drawer-chips-grid">
-                <button class="drawer-chip full-width active" data-type="all" data-val="all" onclick="applyFilter('all', 'all', this)">Tutti i Siti</button>
-                <button class="drawer-chip" data-type="source" data-val="IGN Italia" onclick="applyFilter('source', 'IGN Italia', this)">IGN Italia</button>
-                <button class="drawer-chip" data-type="source" data-val="Multiplayer.it" onclick="applyFilter('source', 'Multiplayer.it', this)">Multiplayer.it</button>
-                <button class="drawer-chip full-width" data-type="source" data-val="Everyeye.it" onclick="applyFilter('source', 'Everyeye.it', this)">Everyeye.it</button>
+                <button class="drawer-chip full-width active" data-type="all" data-val="all" onclick="applyFilter('all', 'all', this)">TUTTI I SITI</button>
+                <button class="drawer-chip" data-type="source" data-val="IGN Italia" onclick="applyFilter('source', 'IGN Italia', this)">IGN ITALIA</button>
+                <button class="drawer-chip" data-type="source" data-val="Multiplayer.it" onclick="applyFilter('source', 'Multiplayer.it', this)">MULTIPLAYER.IT</button>
+                <button class="drawer-chip full-width" data-type="source" data-val="Everyeye.it" onclick="applyFilter('source', 'Everyeye.it', this)">EVERYEYE.IT</button>
             </div>
 
-            <div class="drawer-section-title">Piattaforme Gaming</div>
+            <div class="drawer-section-title">PIATTAFORME GAMING</div>
             <div class="drawer-chips-grid">
-                <button class="drawer-chip" data-type="platform" data-val="pc" onclick="applyFilter('platform', 'pc', this)">PC Gaming</button>
-                <button class="drawer-chip" data-type="platform" data-val="playstation" onclick="applyFilter('platform', 'playstation', this)">PlayStation</button>
-                <button class="drawer-chip" data-type="platform" data-val="xbox" onclick="applyFilter('platform', 'xbox', this)">Xbox</button>
-                <button class="drawer-chip" data-type="platform" data-val="nintendo" onclick="applyFilter('platform', 'nintendo', this)">Nintendo</button>
+                <button class="drawer-chip" data-type="platform" data-val="pc" onclick="applyFilter('platform', 'pc', this)">PC GAMING</button>
+                <button class="drawer-chip" data-type="platform" data-val="playstation" onclick="applyFilter('platform', 'playstation', this)">PLAYSTATION</button>
+                <button class="drawer-chip" data-type="platform" data-val="xbox" onclick="applyFilter('platform', 'xbox', this)">XBOX</button>
+                <button class="drawer-chip" data-type="platform" data-val="nintendo" onclick="applyFilter('platform', 'nintendo', this)">NINTENDO</button>
             </div>
         </div>
     </div>
@@ -365,7 +374,7 @@
             const canvas = document.createElement('canvas');
             canvas.width = 180; canvas.height = 180;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#b45309';
+            ctx.fillStyle = '#7c3aed';
             ctx.fillRect(0, 0, 180, 180);
             ctx.font = '100px sans-serif';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -388,15 +397,42 @@
         };
 
         let allArticles = [];
-        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v12') || '[]');
+        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v13') || '[]');
         let currentTab = 'home';
         let filterType = 'all'; 
         let filterValue = 'all';
+        let notificationsActive = localStorage.getItem('np_notif_v13') === 'true';
+
+        if(notificationsActive) {
+            document.getElementById('notif-btn').classList.add('active-notif');
+        }
 
         function toggleDrawer(open) {
             const drawer = document.getElementById('filter-drawer');
             if (open) drawer.classList.add('open');
             else drawer.classList.remove('open');
+        }
+
+        async function toggleNotifications() {
+            const btn = document.getElementById('notif-btn');
+            if (!notificationsActive) {
+                if ('Notification' in window) {
+                    const permission = await Notification.requestPermission();
+                    if (permission === 'granted') {
+                        notificationsActive = true;
+                        btn.classList.add('active-notif');
+                        localStorage.setItem('np_notif_v13', 'true');
+                    } else {
+                        alert("Permesso notifiche negato dal browser.");
+                    }
+                } else {
+                    alert("Notifiche non supportate da questo dispositivo.");
+                }
+            } else {
+                notificationsActive = false;
+                btn.classList.remove('active-notif');
+                localStorage.setItem('np_notif_v13', 'false');
+            }
         }
 
         function cleanText(text) {
@@ -458,7 +494,7 @@
                     sourceColor: source.color,
                     title: cleanText(title),
                     link: link,
-                    snippet: cleanText(description).slice(0, 110) + "...",
+                    snippet: cleanText(description).slice(0, 100) + "...",
                     image: imgUrl,
                     date: new Date(pubDate)
                 };
@@ -497,7 +533,7 @@
             if (index > -1) savedArticles.splice(index, 1);
             else savedArticles.push(article);
 
-            localStorage.setItem('np_bookmarks_v12', JSON.stringify(savedArticles));
+            localStorage.setItem('np_bookmarks_v13', JSON.stringify(savedArticles));
             renderArticles();
         }
 
@@ -561,8 +597,8 @@
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="status-box">
-                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato.' : 'Nessun articolo trovato...'}</p>
-                        <button onclick="manualRefresh()" style="margin-top:12px; padding: 8px 16px; background:var(--primary); border:none; border-radius:10px; font-weight:800; color:#030712; cursor:pointer;">Aggiorna Ora</button>
+                        <p>${currentTab === 'saved' ? 'NESSUN ARTICOLO SALVATO.' : 'NESSUN ARTICOLO TROVATO.'}</p>
+                        <button onclick="manualRefresh()" style="margin-top:10px; padding: 7px 14px; background:var(--primary); border:none; border-radius:8px; font-weight:800; font-size:0.75rem; text-transform:uppercase; color:#030712; cursor:pointer;">AGGIORNA ORA</button>
                     </div>`;
                 return;
             }
@@ -587,7 +623,7 @@
                             ${showNewBadge ? `<span class="new-tag">NEW</span>` : ''}
                         </div>
                     </div>` : `
-                    <div class="card-badges" style="position:relative; top:0; left:0; padding: 12px 12px 0 12px;">
+                    <div class="card-badges" style="position:relative; top:0; left:0; padding: 10px 10px 0 10px;">
                         <span class="source-tag" style="color: ${art.sourceColor}">${art.source}</span>
                         ${showNewBadge ? `<span class="new-tag">NEW</span>` : ''}
                     </div>`;
