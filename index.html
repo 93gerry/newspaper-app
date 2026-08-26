@@ -7,40 +7,46 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
-    <meta name="theme-color" content="#090d16">
+    <meta name="theme-color" content="#030712">
     
-    <title>NewsPaper 🐤 v9.0</title>
+    <title>NewsPaper 🐤 v10.0 Pro</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- STILI CSS -->
+    <!-- STILI CSS MODERNISSIMI (GLASSMORPHISM & OLED DARK) -->
     <style>
         :root {
-            --bg: #090d16;
-            --surface: #131b2e;
-            --surface-hover: #1e293b;
+            --bg-deep: #030712;
+            --surface-glass: rgba(17, 24, 39, 0.7);
+            --surface-card: rgba(17, 24, 39, 0.5);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(251, 191, 36, 0.3);
+            
             --primary: #fbbf24;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --border: rgba(255, 255, 255, 0.08);
-            --nav-base-height: 64px;
-            --c-all: linear-gradient(135deg, #6366f1, #a855f7);
-            --c-ign: #dc2626;
-            --c-multi: #ea580c;
-            --c-every: #2563eb;
-            --c-pc: #059669;
-            --c-ps: #1d4ed8;
-            --c-xbox: #16a34a;
-            --c-nintendo: #e11d48;
+            --accent-glow: rgba(251, 191, 36, 0.15);
+            --text-main: #f9fafb;
+            --text-sub: #9ca3af;
+            
+            --nav-height: 72px;
+
+            /* Brand Colors for Chips */
+            --c-all: linear-gradient(135deg, #4f46e5, #9333ea);
+            --c-ign: #ef4444;
+            --c-multi: #f97316;
+            --c-every: #3b82f6;
+            --c-pc: #10b981;
+            --c-ps: #2563eb;
+            --c-xbox: #22c55e;
+            --c-nintendo: #f43f5e;
         }
 
         html, body {
             height: 100%;
             overflow: hidden;
-            background-color: var(--bg);
+            background-color: var(--bg-deep);
             color: var(--text-main);
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-tap-highlight-color: transparent;
@@ -50,6 +56,23 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        /* Sfondo con sfumature ambientali moderne (mesh gradient style) */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            opacity: 0.4;
+        }
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+        .blob-1 { width: 300px; height: 300px; background: #4f46e5; top: -100px; left: -50px; }
+        .blob-2 { width: 250px; height: 250px; background: #9333ea; bottom: 100px; right: -50px; }
+
         .app-layout {
             display: flex;
             flex-direction: column;
@@ -57,130 +80,229 @@
             height: 100dvh;
             width: 100vw;
             position: relative;
+            z-index: 1;
         }
 
+        /* TOP BAR CON FROSTED GLASS */
         .top-bar { 
             flex-shrink: 0;
             z-index: 900; 
-            background: rgba(9, 13, 22, 0.96); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border); 
+            background: rgba(3, 7, 18, 0.82); 
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border-glass); 
             padding: 12px 16px;
             padding-top: calc(env(safe-area-inset-top, 20px) + 8px);
         }
 
         .header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .brand { display: flex; align-items: center; gap: 10px; }
-        .brand-logo { background: #5b21b6; border: 1px solid rgba(255,255,255,0.15); width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; font-size: 1.25rem; box-shadow: 0 4px 14px rgba(91, 33, 182, 0.4); }
-        .brand-title { font-size: 1.3rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .brand-logo { 
+            background: linear-gradient(135deg, #4f46e5, #7c3aed); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            width: 40px; height: 40px; 
+            border-radius: 14px; 
+            display: grid; place-items: center; 
+            font-size: 1.25rem; 
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35); 
+        }
+        .brand-title { font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -0.6px; }
         .brand-title span { color: var(--primary); }
         
         .header-controls { display: flex; align-items: center; gap: 8px; }
         
-        .btn-push { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); color: var(--primary); width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; cursor: pointer; }
-        .btn-push svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-        .btn-push:active { transform: scale(0.92); }
+        .icon-btn { 
+            background: var(--surface-glass); 
+            border: 1px solid var(--border-glass); 
+            color: var(--text-main); 
+            width: 40px; height: 40px; 
+            border-radius: 14px; 
+            display: grid; place-items: center; 
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .icon-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.1); }
 
-        .limit-wrapper { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); padding: 4px 10px; border-radius: 11px; font-size: 0.75rem; font-weight: 700; color: var(--text-sub); height: 38px; }
+        .btn-push-active { color: var(--primary); border-color: var(--border-glow); background: var(--accent-glow); }
+
+        .limit-pill { 
+            display: flex; align-items: center; gap: 4px; 
+            background: var(--surface-glass); 
+            border: 1px solid var(--border-glass); 
+            padding: 0 10px; 
+            border-radius: 14px; 
+            font-size: 0.72rem; font-weight: 700; color: var(--text-sub); 
+            height: 40px; 
+        }
         .limit-select { background: transparent; border: none; color: var(--primary); font-family: inherit; font-size: 0.85rem; font-weight: 800; outline: none; cursor: pointer; }
-        .limit-select option { background: var(--surface); color: var(--text-main); }
+        .limit-select option { background: #0f172a; color: var(--text-main); }
 
-        .btn-action { background: var(--surface); border: 1px solid var(--border); color: var(--text-main); width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; cursor: pointer; }
-        .btn-refresh svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
         .btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
-
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .search-wrapper { position: relative; margin-bottom: 10px; }
-        .search-input { width: 100%; background: var(--surface); border: 1px solid var(--border); padding: 9px 14px 9px 38px; border-radius: 12px; color: var(--text-main); font-size: 0.9rem; outline: none; font-family: inherit; -webkit-appearance: none; }
-        .search-input:focus { border-color: rgba(251, 191, 36, 0.4); }
-        .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.9rem; }
+        /* SEARCH BAR MODERNA */
+        .search-wrapper { position: relative; margin-bottom: 12px; }
+        .search-input { 
+            width: 100%; 
+            background: rgba(17, 24, 39, 0.5); 
+            border: 1px solid var(--border-glass); 
+            padding: 10px 16px 10px 42px; 
+            border-radius: 14px; 
+            color: var(--text-main); 
+            font-size: 0.9rem; 
+            outline: none; 
+            font-family: inherit; 
+            -webkit-appearance: none;
+            transition: all 0.2s;
+        }
+        .search-input:focus { border-color: rgba(251, 191, 36, 0.4); background: rgba(17, 24, 39, 0.8); box-shadow: 0 0 0 4px var(--accent-glow); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.9rem; }
 
-        /* MENU DI NAVIGAZIONE MODERNI & MOBILE-FRIENDLY */
+        /* MENU DI NAVIGAZIONE ORIZZONTALI (PILLOLE TOUCH) */
         .filters-container { display: flex; flex-direction: column; gap: 8px; }
         .filter-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
         .filter-row::-webkit-scrollbar { display: none; }
-        .row-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-sub); min-width: 70px; flex-shrink: 0; }
+        .row-label { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-sub); min-width: 75px; flex-shrink: 0; }
         
-        .tag-chip { 
-            background: var(--surface); 
+        .tag-pill { 
+            background: var(--surface-glass); 
             color: var(--text-sub); 
-            border: 1px solid var(--border); 
+            border: 1px solid var(--border-glass); 
             padding: 8px 16px; 
             border-radius: 12px; 
-            font-size: 0.75rem; 
-            font-weight: 800; 
+            font-size: 0.74rem; 
+            font-weight: 700; 
             white-space: nowrap; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
-            letter-spacing: 0.5px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            letter-spacing: 0.4px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .tag-chip:active { transform: scale(0.95); }
-        .tag-chip.active { color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .tag-pill:active { transform: scale(0.94); }
+        .tag-pill.active { color: #fff; border-color: transparent; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
         
-        .tag-chip[data-color="all"].active { background: var(--c-all); }
-        .tag-chip[data-color="ign"].active { background: var(--c-ign); }
-        .tag-chip[data-color="multi"].active { background: var(--c-multi); }
-        .tag-chip[data-color="every"].active { background: var(--c-every); }
-        .tag-chip[data-color="pc"].active { background: var(--c-pc); }
-        .tag-chip[data-color="ps"].active { background: var(--c-ps); }
-        .tag-chip[data-color="xbox"].active { background: var(--c-xbox); }
-        .tag-chip[data-color="nintendo"].active { background: var(--c-nintendo); }
+        .tag-pill[data-color="all"].active { background: var(--c-all); }
+        .tag-pill[data-color="ign"].active { background: var(--c-ign); }
+        .tag-pill[data-color="multi"].active { background: var(--c-multi); }
+        .tag-pill[data-color="every"].active { background: var(--c-every); }
+        .tag-pill[data-color="pc"].active { background: var(--c-pc); }
+        .tag-pill[data-color="ps"].active { background: var(--c-ps); }
+        .tag-pill[data-color="xbox"].active { background: var(--c-xbox); }
+        .tag-pill[data-color="nintendo"].active { background: var(--c-nintendo); }
 
+        /* CONTENUTO SCORRIBILE */
         .scrollable-content {
             flex-grow: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding: 16px;
-            padding-bottom: calc(var(--nav-base-height) + env(safe-area-inset-bottom, 20px) + 20px);
+            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 20px) + 20px);
         }
 
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; max-width: 1100px; margin: 0 auto; }
 
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; color: inherit; text-decoration: none; transition: transform 0.2s; }
-        .card:active { transform: scale(0.98); }
-        .card-cover { width: 100%; height: 170px; position: relative; background: #1a233a; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        /* CARD BENTO / GLASS STYLE */
+        .card { 
+            background: var(--surface-card); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass); 
+            border-radius: 20px; 
+            overflow: hidden; 
+            display: flex; flex-direction: column; 
+            cursor: pointer; color: inherit; text-decoration: none; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s; 
+        }
+        .card:active { transform: scale(0.97); border-color: rgba(255,255,255,0.2); }
+        
+        .card-cover { width: 100%; height: 180px; position: relative; background: #0b0f19; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .card:hover .card-img { transform: scale(1.03); }
         
         .badge-container { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; z-index: 2; }
-        .badge-source { background: rgba(9, 13, 22, 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 8px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
-        .badge-new { background: #ef4444; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; }
+        .badge-source { 
+            background: rgba(3, 7, 18, 0.85); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px); 
+            padding: 5px 10px; 
+            border-radius: 8px; 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            border: 1px solid rgba(255,255,255,0.08); 
+        }
+        .badge-new { background: #ef4444; color: #fff; padding: 5px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4); }
 
-        .card-content { padding: 14px 16px; display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-size: 1rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px; color: var(--text-main); }
-        .card-snippet { font-size: 0.82rem; color: var(--text-sub); line-height: 1.4; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-content { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 1.05rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px; color: var(--text-main); letter-spacing: -0.3px; }
+        .card-snippet { font-size: 0.82rem; color: var(--text-sub); line-height: 1.45; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .card-meta { font-size: 0.72rem; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; margin-top: auto; }
+        .card-meta { font-size: 0.72rem; color: var(--text-sub); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 12px; margin-top: auto; }
 
-        .btn-star { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: grid; place-items: center; opacity: 0.4; filter: grayscale(0.6); }
-        .btn-star.active { opacity: 1; filter: grayscale(0); background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.5); }
+        .btn-star { 
+            background: rgba(255, 255, 255, 0.04); 
+            border: 1px solid var(--border-glass); 
+            width: 36px; height: 36px; 
+            border-radius: 12px; 
+            font-size: 1rem; cursor: pointer; 
+            display: grid; place-items: center; 
+            opacity: 0.4; filter: grayscale(0.8);
+            transition: all 0.2s;
+        }
+        .btn-star.active { opacity: 1; filter: grayscale(0); background: var(--accent-glow); border-color: var(--border-glow); }
 
-        /* MENU IN BASSO OTTIMIZZATO MOBILE */
-        .bottom-nav { 
-            flex-shrink: 0;
+        /* FLOATING BOTTOM NAV IN STILE "DYNAMIC ISLAND / FLOATING BAR" */
+        .bottom-nav-container {
+            position: absolute;
+            bottom: calc(env(safe-area-inset-bottom, 15px) + 10px);
+            left: 0; width: 100%;
+            display: flex; justify-content: center;
             z-index: 900;
-            height: calc(var(--nav-base-height) + env(safe-area-inset-bottom, 0px)); 
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-            background: rgba(19, 27, 46, 0.96); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border); 
+            pointer-events: none;
+            padding: 0 16px;
+        }
+
+        .bottom-nav { 
+            pointer-events: auto;
+            width: 100%;
+            max-width: 360px;
+            height: var(--nav-height); 
+            background: rgba(17, 24, 39, 0.85); 
+            backdrop-filter: blur(28px); 
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            border-radius: 24px; 
             display: flex; 
             justify-content: space-around; 
             align-items: center; 
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+            padding: 0 8px;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-sub); background: none; border: none; font-size: 0.72rem; font-weight: 700; cursor: pointer; width: 50%; height: 100%; justify-content: center; }
-        .nav-item.active { color: var(--primary); }
+
+        .nav-item { 
+            display: flex; flex-direction: column; align-items: center; gap: 3px; 
+            color: var(--text-sub); background: none; border: none; 
+            font-size: 0.7rem; font-weight: 700; cursor: pointer; 
+            flex-grow: 1; height: 100%; justify-content: center; 
+            border-radius: 16px;
+            transition: all 0.2s;
+        }
+        .nav-item.active { color: var(--primary); background: rgba(251, 191, 36, 0.08); }
+        .nav-item span:first-child { font-size: 1.25rem; transition: transform 0.2s; }
+        .nav-item:active span:first-child { transform: scale(1.2); }
 
         .status-box { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-sub); }
-        .spinner { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+        .spinner { width: 38px; height: 38px; border: 3px solid var(--border-glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
     </style>
 </head>
 <body>
+
+    <div class="ambient-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
 
     <div class="app-layout">
         
@@ -192,12 +314,12 @@
                 </div>
                 
                 <div class="header-controls">
-                    <button class="btn-push" id="push-btn" onclick="togglePushNotifications()" title="Attiva Notifiche Push">
+                    <button class="icon-btn" id="push-btn" onclick="togglePushNotifications()" title="Notifiche Push">
                         <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                     </button>
                     
-                    <div class="limit-wrapper">
-                        <span>Limit:</span>
+                    <div class="limit-pill">
+                        <span>Max:</span>
                         <select id="article-limit" class="limit-select" onchange="renderArticles()">
                             <option value="10">10</option>
                             <option value="20">20</option>
@@ -207,7 +329,7 @@
                         </select>
                     </div>
                     
-                    <button class="btn-action btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna ora">
+                    <button class="icon-btn btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna ora">
                         <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
                     </button>
                 </div>
@@ -215,27 +337,27 @@
 
             <div class="search-wrapper">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="search-input" class="search-input" placeholder="Cerca tra le notizie..." oninput="renderArticles()">
+                <input type="text" id="search-input" class="search-input" placeholder="Cerca tra le notizie in tempo reale..." oninput="renderArticles()">
             </div>
 
             <div class="filters-container">
                 <div class="filter-row">
-                    <button class="tag-chip active" data-color="all" onclick="setFilter('all', 'all', this)">TUTTI I 3 SITI</button>
+                    <button class="tag-pill active" data-color="all" onclick="setFilter('all', 'all', this)">TUTTI I 3 SITI</button>
                 </div>
 
                 <div class="filter-row">
                     <span class="row-label">SITI</span>
-                    <button class="tag-chip" data-color="ign" onclick="setFilter('source', 'IGN Italia', this)">IGN ITALIA</button>
-                    <button class="tag-chip" data-color="multi" onclick="setFilter('source', 'Multiplayer.it', this)">MULTIPLAYER.IT</button>
-                    <button class="tag-chip" data-color="every" onclick="setFilter('source', 'Everyeye.it', this)">EVERYEYE.IT</button>
+                    <button class="tag-pill" data-color="ign" onclick="setFilter('source', 'IGN Italia', this)">IGN ITALIA</button>
+                    <button class="tag-pill" data-color="multi" onclick="setFilter('source', 'Multiplayer.it', this)">MULTIPLAYER.IT</button>
+                    <button class="tag-pill" data-color="every" onclick="setFilter('source', 'Everyeye.it', this)">EVERYEYE.IT</button>
                 </div>
 
                 <div class="filter-row">
                     <span class="row-label">PIATTAFORME</span>
-                    <button class="tag-chip" data-color="pc" onclick="setFilter('platform', 'pc', this)">PC</button>
-                    <button class="tag-chip" data-color="ps" onclick="setFilter('platform', 'playstation', this)">PLAYSTATION</button>
-                    <button class="tag-chip" data-color="xbox" onclick="setFilter('platform', 'xbox', this)">XBOX</button>
-                    <button class="tag-chip" data-color="nintendo" onclick="setFilter('platform', 'nintendo', this)">NINTENDO</button>
+                    <button class="tag-pill" data-color="pc" onclick="setFilter('platform', 'pc', this)">PC</button>
+                    <button class="tag-pill" data-color="ps" onclick="setFilter('platform', 'playstation', this)">PLAYSTATION</button>
+                    <button class="tag-pill" data-color="xbox" onclick="setFilter('platform', 'xbox', this)">XBOX</button>
+                    <button class="tag-pill" data-color="nintendo" onclick="setFilter('platform', 'nintendo', this)">NINTENDO</button>
                 </div>
             </div>
         </header>
@@ -244,21 +366,23 @@
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Caricamento notizie in corso...</p>
+                    <p>Sincronizzazione feed in corso...</p>
                 </div>
             </div>
         </main>
 
-        <nav class="bottom-nav">
-            <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
-                <span style="font-size:1.3rem">📰</span>
-                <span>Feed</span>
-            </button>
-            <button class="nav-item" id="nav-saved" onclick="switchTab('saved')">
-                <span style="font-size:1.3rem">⭐</span>
-                <span>Preferiti</span>
-            </button>
-        </nav>
+        <div class="bottom-nav-container">
+            <nav class="bottom-nav">
+                <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+                    <span>📰</span>
+                    <span>Feed</span>
+                </button>
+                <button class="nav-item" id="nav-saved" onclick="switchTab('saved')">
+                    <span>⭐</span>
+                    <span>Preferiti</span>
+                </button>
+            </nav>
+        </div>
 
     </div>
 
@@ -266,23 +390,21 @@
     <script>
         function generateAppleIcon() {
             const canvas = document.createElement('canvas');
-            canvas.width = 180;
-            canvas.height = 180;
+            canvas.width = 180; canvas.height = 180;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#5b21b6';
+            ctx.fillStyle = '#4f46e5';
             ctx.fillRect(0, 0, 180, 180);
             ctx.font = '100px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText('🐤', 90, 98);
             document.getElementById('apple-icon').href = canvas.toDataURL('image/png');
         }
         generateAppleIcon();
 
         const FEEDS = [
-            { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#dc2626" },
-            { name: "Multiplayer.it", url: "https://multiplayer.it/feed/rss/news/", color: "#ea580c" },
-            { name: "Everyeye.it", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#2563eb" }
+            { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#ef4444" },
+            { name: "Multiplayer.it", url: "https://multiplayer.it/feed/rss/news/", color: "#f97316" },
+            { name: "Everyeye.it", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#3b82f6" }
         ];
 
         const PLATFORM_KEYWORDS = {
@@ -293,25 +415,27 @@
         };
 
         let allArticles = [];
-        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks') || '[]');
+        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v10') || '[]');
         let currentTab = 'home';
         let filterType = 'all'; 
         let filterValue = 'all';
 
         async function togglePushNotifications() {
+            const btn = document.getElementById('push-btn');
             if (!("Notification" in window)) {
-                alert("Per attivare le notifiche, aggiungi la pagina alla schermata Home.");
+                alert("Aggiungi la pagina alla schermata Home del telefono per abilitare le notifiche.");
                 return;
             }
-
             try {
                 let permission = Notification.permission;
                 if (permission === "granted") {
+                    btn.classList.add('btn-push-active');
                     alert("Le notifiche push sono già attive! 🐤");
                 } else if (permission !== "denied") {
                     permission = await Notification.requestPermission();
                     if (permission === "granted") {
-                        new Notification("NewsPaper 🐤", {
+                        btn.classList.add('btn-push-active');
+                        new Notification("NewsPaper 🐤 Pro", {
                             body: "Notifiche attivate con successo!",
                             icon: document.getElementById('apple-icon').href
                         });
@@ -387,7 +511,6 @@
             }).filter(art => art.title && art.link);
         }
 
-        // SISTEMA MULTI-PROXY DI FALLBACK PER EVITARE BLOCCHI DI SCARICAMENTO
         async function fetchFeedOriginal(source) {
             const proxies = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}`,
@@ -399,7 +522,7 @@
                     const res = await fetch(proxyUrl);
                     if (res.ok) {
                         const text = await res.text();
-                        if (text && text.includes("<rss") || text.includes("<feed") || text.includes("<xml")) {
+                        if (text && (text.includes("<rss") || text.includes("<feed") || text.includes("<xml"))) {
                             const parsed = parseRawXML(text, source);
                             if (parsed.length > 0) return parsed;
                         }
@@ -423,7 +546,7 @@
                 savedArticles.push(article);
             }
 
-            localStorage.setItem('np_bookmarks', JSON.stringify(savedArticles));
+            localStorage.setItem('np_bookmarks_v10', JSON.stringify(savedArticles));
             renderArticles();
         }
 
@@ -449,7 +572,7 @@
         function setFilter(type, value, element) {
             filterType = type;
             filterValue = value;
-            document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tag-pill').forEach(c => c.classList.remove('active'));
             element.classList.add('active');
             renderArticles();
         }
@@ -489,8 +612,8 @@
             if (limitedList.length === 0) {
                 grid.innerHTML = `
                     <div class="status-box">
-                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Caricamento notizie in corso o connessione assente...'}</p>
-                        <button onclick="manualRefresh()" style="margin-top:12px; padding: 8px 16px; background:var(--primary); border:none; border-radius:10px; font-weight:800; color:#000; cursor:pointer;">Aggiorna Ora</button>
+                        <p>${currentTab === 'saved' ? 'Nessun articolo nei preferiti.' : 'Sincronizzazione in corso o nessun articolo trovato...'}</p>
+                        <button onclick="manualRefresh()" style="margin-top:14px; padding: 10px 20px; background:var(--primary); border:none; border-radius:14px; font-weight:800; color:#030712; cursor:pointer; box-shadow: 0 4px 14px var(--accent-glow);">Aggiorna Ora</button>
                     </div>`;
                 return;
             }
@@ -515,7 +638,7 @@
                             ${showNewBadge ? `<span class="badge-new">NEW</span>` : ''}
                         </div>
                     </div>` : `
-                    <div class="badge-container" style="position:relative; top:0; left:0; padding: 14px 16px 0 16px;">
+                    <div class="badge-container" style="position:relative; top:0; left:0; padding: 16px 16px 0 16px;">
                         <span class="badge-source" style="color: ${art.sourceColor}">${art.source}</span>
                         ${showNewBadge ? `<span class="badge-new">NEW</span>` : ''}
                     </div>`;
@@ -526,7 +649,7 @@
                         <h2 class="card-title">${art.title}</h2>
                         <p class="card-snippet">${art.snippet}</p>
                         <div class="card-meta">
-                            <span>🕒 ${dateStr} • ${art.source}</span>
+                            <span>🕒 ${dateStr}</span>
                             <button class="btn-star ${isSaved ? 'active' : ''}" onclick="toggleBookmark(event, '${art.id}')" title="Preferiti">⭐</button>
                         </div>
                     </div>
@@ -535,10 +658,7 @@
             });
         }
 
-        // Avvio iniziale
         loadAllNews();
-
-        // Timer di aggiornamento automatico ogni 60 secondi
         setInterval(loadAllNews, 60000);
     </script>
 </body>
