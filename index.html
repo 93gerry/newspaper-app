@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v6.9</title>
+    <title>NewsPaper 🐤 v7.1 Live</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -178,16 +178,15 @@
                     <div class="limit-wrapper">
                         <span>Limit:</span>
                         <select id="article-limit" class="limit-select" onchange="renderArticles()">
-                            <option value="5">5</option>
                             <option value="10">10</option>
-                            <option value="15" selected>15</option>
                             <option value="20">20</option>
-                            <option value="25">25</option>
-                            <option value="30">30</option>
+                            <option value="30" selected>30</option>
+                            <option value="40">40</option>
+                            <option value="50">50</option>
                         </select>
                     </div>
                     
-                    <button class="btn-action btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
+                    <button class="btn-action btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna ora">
                         <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
                     </button>
                 </div>
@@ -224,7 +223,7 @@
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Scaricamento notizie reali in corso...</p>
+                    <p>Sincronizzazione in tempo reale...</p>
                 </div>
             </div>
         </main>
@@ -368,17 +367,18 @@
         }
 
         async function fetchFeedFast(source) {
-            const ts = Date.now();
+            // Parametro anti-cache estremamente aggressivo basato sul millisecondo corrente
+            const uniqueStamp = Date.now() + Math.random();
             const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_t=${ts}`,
-                `https://corsproxy.io/?${encodeURIComponent(source.url)}`
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_nc=${uniqueStamp}`,
+                `https://corsproxy.io/?${encodeURIComponent(source.url)}?_nc=${uniqueStamp}`
             ];
 
             for (let proxyUrl of proxies) {
                 try {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 4000);
-                    const res = await fetch(proxyUrl, { signal: controller.signal });
+                    const res = await fetch(proxyUrl, { signal: controller.signal, cache: 'no-store' });
                     clearTimeout(timeoutId);
                     
                     if (res.ok) {
@@ -424,6 +424,7 @@
                 let freshArticles = results.flat();
 
                 if (freshArticles.length > 0) {
+                    // Ordina sempre per data decrescente in modo rigoroso (dal più recente al meno recente al minuto)
                     allArticles = freshArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
                 }
             } catch (err) {}
@@ -454,7 +455,7 @@
         function renderArticles() {
             const grid = document.getElementById("news-grid");
             const searchQuery = document.getElementById("search-input").value.toLowerCase();
-            const maxLimit = parseInt(document.getElementById("article-limit").value, 10) || 15;
+            const maxLimit = parseInt(document.getElementById("article-limit").value, 10) || 30;
             
             let targetList = (currentTab === 'saved') ? savedArticles : allArticles;
 
@@ -519,7 +520,13 @@
             });
         }
 
+        // Primo avvio
         loadAllNews();
+
+        // Auto-refresh in background ogni 3 minuti per catturare gli articoli minuto per minuto
+        setInterval(() => {
+            loadAllNews();
+        }, 180000);
     </script>
 </body>
 </html>
