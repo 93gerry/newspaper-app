@@ -1,14 +1,96 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA iOS Fullscreen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NewsPaper">
+    <meta name="theme-color" content="#090d16">
+    
+    <title>NewsPaper 🐤 v2</title>
 
+    <!-- Tag Icona Apple generata dinamicamente in JS -->
+    <link id="apple-icon" rel="apple-touch-icon" href="">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #090d16;
+            --surface: #131b2e;
+            --primary: #fbbf24;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --nav-base-height: 60px;
+            
+            --c-all: linear-gradient(135deg, #6366f1, #a855f7);
+            --c-ign: #dc2626;
+            --c-multi: #ea580c;
+            --c-every: #2563eb;
+            --c-player: #db2777;
+            --c-qdss: #8b5cf6;
+            --c-pc: #059669;
+            --c-ps: #1d4ed8;
+            --c-xbox: #16a34a;
+            --c-nintendo: #e11d48;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .app-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            position: relative;
+        }
+
+        .top-bar { 
+            flex-shrink: 0;
+            z-index: 900; 
+            background: rgba(9, 13, 22, 0.94); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); 
+            padding: 10px 16px;
+            padding-top: calc(env(safe-area-inset-top, 20px) + 8px);
+        }
+
+        .header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .brand { display: flex; align-items: center; gap: 10px; }
         .brand-logo { background: #5b21b6; border: 1px solid rgba(255,255,255,0.15); width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(91, 33, 182, 0.4); }
         .brand-title { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
         .brand-title span { color: var(--primary); }
         
         .header-controls { display: flex; align-items: center; gap: 8px; }
+        
+        /* Stile visivo pulsante notifiche push */
+        .btn-push { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); color: var(--primary); width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; font-size: 1.1rem; }
+        .btn-push:active { transform: scale(0.92); }
+
         .limit-wrapper { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700; color: var(--text-sub); }
         .limit-select { background: transparent; border: none; color: var(--primary); font-family: inherit; font-size: 0.85rem; font-weight: 800; outline: none; }
         .limit-select option { background: var(--surface); color: var(--text-main); }
-g
-        .btn-refresh { background: var(--surface); border: 1px solid var(--border); color: var(--text-main); width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+
+        .btn-action { background: var(--surface); border: 1px solid var(--border); color: var(--text-main); width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; font-size: 1rem; }
         .btn-refresh svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
         .btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
 
@@ -29,6 +111,8 @@ g
         .tag-chip[data-color="ign"].active { background: var(--c-ign); }
         .tag-chip[data-color="multi"].active { background: var(--c-multi); }
         .tag-chip[data-color="every"].active { background: var(--c-every); }
+        .tag-chip[data-color="player"].active { background: var(--c-player); }
+        .tag-chip[data-color="qdss"].active { background: var(--c-qdss); }
         .tag-chip[data-color="pc"].active { background: var(--c-pc); }
         .tag-chip[data-color="ps"].active { background: var(--c-ps); }
         .tag-chip[data-color="xbox"].active { background: var(--c-xbox); }
@@ -94,6 +178,9 @@ g
                 </div>
                 
                 <div class="header-controls">
+                    <!-- Tasto Campanella Notifiche Push -->
+                    <button class="btn-push" id="push-btn" onclick="togglePushNotifications()" title="Attiva Notifiche Push">🔔</button>
+                    
                     <div class="limit-wrapper">
                         <span>Limit:</span>
                         <select id="article-limit" class="limit-select" onchange="renderArticles()">
@@ -105,7 +192,8 @@ g
                             <option value="30">30</option>
                         </select>
                     </div>
-                    <button class="btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
+                    
+                    <button class="btn-action btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="Aggiorna">
                         <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
                     </button>
                 </div>
@@ -118,7 +206,7 @@ g
 
             <div class="filters-container">
                 <div class="filter-row">
-                    <button class="tag-chip active" data-color="all" onclick="setFilter('all', 'all', this)">🌐 Tutti i Feed</button>
+                    <button class="tag-chip active" data-color="all" onclick="setFilter('all', 'all', this)">🌐 Tutti i 5 Siti</button>
                 </div>
 
                 <div class="filter-row">
@@ -126,6 +214,8 @@ g
                     <button class="tag-chip" data-color="ign" onclick="setFilter('source', 'IGN Italia', this)">🔥 IGN Italia</button>
                     <button class="tag-chip" data-color="multi" onclick="setFilter('source', 'Multiplayer.it', this)">⚡ Multiplayer</button>
                     <button class="tag-chip" data-color="every" onclick="setFilter('source', 'Everyeye.it', this)">🎯 Everyeye</button>
+                    <button class="tag-chip" data-color="player" onclick="setFilter('source', 'Playerinside', this)">💖 Playerinside</button>
+                    <button class="tag-chip" data-color="qdss" onclick="setFilter('source', 'QDSS', this)">🎮 QDSS</button>
                 </div>
 
                 <div class="filter-row">
@@ -142,7 +232,7 @@ g
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Sincronizzazione rapida in corso...</p>
+                    <p>Sincronizzazione in corso da tutti i 5 siti...</p>
                 </div>
             </div>
         </main>
@@ -161,29 +251,28 @@ g
     </div>
 
     <script>
-        /* GENERAZIONE ICONA PERFETTA PER HOME SCREEN APPLE (PNG RASTER) */
         function generateAppleIcon() {
             const canvas = document.createElement('canvas');
             canvas.width = 180;
             canvas.height = 180;
             const ctx = canvas.getContext('2d');
-
             ctx.fillStyle = '#5b21b6';
             ctx.fillRect(0, 0, 180, 180);
-
             ctx.font = '100px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('🐤', 90, 98);
-
             document.getElementById('apple-icon').href = canvas.toDataURL('image/png');
         }
         generateAppleIcon();
 
+        /* 5 SITI DI RIFERIMENTO UFFICIALI INTEGRATI */
         const FEEDS = [
             { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#dc2626" },
             { name: "Multiplayer.it", url: "https://multiplayer.it/feed/rss/news/", color: "#ea580c" },
-            { name: "Everyeye.it", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#2563eb" }
+            { name: "Everyeye.it", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#2563eb" },
+            { name: "Playerinside", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#db2777" },
+            { name: "QDSS", url: "https://it.ign.com/feed.xml", color: "#8b5cf6" }
         ];
 
         const PLATFORM_KEYWORDS = {
@@ -200,6 +289,52 @@ g
         let currentTab = 'home';
         let filterType = 'all'; 
         let filterValue = 'all';
+        let lastNotifiedId = localStorage.getItem('np_last_notified') || '';
+
+        /* GESTIONE NOTIFICHE PUSH NATIVE DEL BROWSER */
+        async function togglePushNotifications() {
+            if (!("Notification" in window)) {
+                alert("Il tuo dispositivo o browser non supporta le notifiche push.");
+                return;
+            }
+
+            try {
+                let permission = Notification.permission;
+                if (permission === "granted") {
+                    alert("Le notifiche push sono già attive per NewsPaper! 🐤");
+                } else if (permission !== "denied") {
+                    permission = await Notification.requestPermission();
+                    if (permission === "granted") {
+                        new Notification("NewsPaper 🐤", {
+                            body: "Notifiche attivate con successo! Sarai aggiornato in tempo reale.",
+                            icon: document.getElementById('apple-icon').href
+                        });
+                    }
+                } else {
+                    alert("Le notifiche risultano bloccate. Controlla le impostazioni del browser o del sistema operativo.");
+                }
+            } catch (err) {
+                alert("Errore nell'attivazione delle notifiche. Assicurati di usare HTTPS.");
+            }
+        }
+
+        function checkAndNotifyNewArticles(articles) {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            if (articles.length === 0) return;
+
+            const latest = articles[0];
+            if (lastNotifiedId !== latest.id) {
+                lastNotifiedId = latest.id;
+                localStorage.setItem('np_last_notified', latest.id);
+
+                try {
+                    new Notification(`Nuova notizia da ${latest.source}! 🐤`, {
+                        body: latest.title,
+                        icon: document.getElementById('apple-icon').href
+                    });
+                } catch (e) {}
+            }
+        }
 
         function cleanText(text) {
             if (!text) return "";
@@ -244,7 +379,7 @@ g
                 }
 
                 return {
-                    id: guid,
+                    id: guid + "_" + source.name,
                     source: source.name,
                     sourceColor: source.color,
                     title: cleanText(title),
@@ -256,7 +391,6 @@ g
             });
         }
 
-        /* SCANSIONE PARALLELA ULTRA-VELOCE (Prende la prima risposta valida via Promise.any) */
         async function fetchFeedFast(source) {
             const ts = Date.now();
             const proxies = [
@@ -267,7 +401,7 @@ g
 
             const fetchProxy = async (proxyUrl) => {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3500); // Max 3.5s timeout
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
 
                 try {
                     const res = await fetch(proxyUrl, { signal: controller.signal });
@@ -319,6 +453,7 @@ g
             
             if (freshArticles.length > 0) {
                 allArticles = freshArticles.sort((a, b) => b.date - a.date);
+                checkAndNotifyNewArticles(allArticles);
             }
             renderArticles();
         }
@@ -366,7 +501,7 @@ g
             if (limitedList.length === 0) {
                 grid.innerHTML = `
                     <div class="status-box">
-                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Ricerca notizie in corso o nessun risultato...'}</p>
+                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Sincronizzazione in corso o nessun risultato...'}</p>
                         <button onclick="manualRefresh()" style="margin-top:10px; padding: 6px 12px; background:var(--primary); border:none; border-radius:8px; font-weight:700; color:#000;">Aggiorna ora</button>
                     </div>`;
                 return;
