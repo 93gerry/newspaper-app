@@ -9,21 +9,21 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#030712">
     
-    <title>NewsPaper 🐤 v14.0 Acid Neon</title>
+    <title>NewsPaper 🐤 v14.2 Multi-Filter</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- STILI GRAFICI ACID NEON v14 -->
+    <!-- STILI GRAFICI ACID NEON v14.2 -->
     <style>
         :root {
             --bg-base: #030712;
             --surface-glass: rgba(15, 23, 42, 0.85);
             --surface-card: rgba(15, 23, 42, 0.6);
             --border-glass: rgba(255, 255, 255, 0.08);
-            --primary: #ccff00; /* Giallo acido super visibile */
+            --primary: #ccff00; /* Giallo acido */
             --primary-glow: rgba(204, 255, 0, 0.15);
             --brand-purple: #7c3aed;
             --text-main: #f8fafc;
@@ -44,7 +44,6 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; text-transform: uppercase; }
 
-        /* Permettiamo al testo descrittivo/snippet e input di mantenere il normale case se necessario, ma i menu forzati */
         input, .card-snippet { text-transform: none !important; }
 
         .app-layout {
@@ -136,7 +135,7 @@
         }
         .filter-badge-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
-        /* CONTENUTO SCORRIBILE MASSIMIZZATO */
+        /* CONTENUTO SCORRIBILE */
         .scrollable-content {
             flex-grow: 1;
             overflow-y: auto;
@@ -193,7 +192,7 @@
         }
         .bookmark-btn.active { opacity: 1; filter: grayscale(0); background: var(--primary-glow); border-color: rgba(204, 255, 0, 0.4); color: var(--primary); }
 
-        /* NAVIGAZIONE IN BASSO MICRO-COMPATTA */
+        /* NAVIGAZIONE IN BASSO */
         .bottom-nav-wrapper {
             position: absolute;
             bottom: calc(env(safe-area-inset-bottom, 8px) + 4px);
@@ -264,7 +263,25 @@
             margin-bottom: 14px;
         }
         .drawer-title { font-size: 0.95rem; font-weight: 800; color: #fff; }
-        .drawer-close { background: rgba(255,255,255,0.08); border: none; color: #fff; width: 26px; height: 26px; border-radius: 50%; font-size: 0.8rem; cursor: pointer; }
+        
+        .drawer-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drawer-action-icon {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: grid; place-items: center;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .drawer-action-icon:active { transform: scale(0.9); }
+        .drawer-action-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
         .drawer-section-title { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.8px; color: var(--text-sub); margin-bottom: 6px; margin-top: 12px; }
         
@@ -311,7 +328,7 @@
                 <span>FILTRI</span>
             </button>
 
-            <!-- CAMPANELLA NOTIFICHE RIPRISTINATA -->
+            <!-- CAMPANELLA NOTIFICHE PUSH CON GESTIONE PWA -->
             <button class="action-icon-btn" id="notif-btn" onclick="toggleNotifications()" title="NOTIFICHE">
                 <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
@@ -345,28 +362,33 @@
 
     </div>
 
-    <!-- DRAWER FILTRI -->
+    <!-- DRAWER FILTRI MULTIPLI CON CESTINO -->
     <div class="drawer-overlay" id="filter-drawer" onclick="if(event.target === this) toggleDrawer(false)">
         <div class="drawer-panel">
             <div class="drawer-header">
-                <h3 class="drawer-title">FILTRI E PIATTAFORME</h3>
-                <button class="drawer-close" onclick="toggleDrawer(false)">✕</button>
+                <h3 class="drawer-title">FILTRI MULTIPLI</h3>
+                <div class="drawer-header-actions">
+                    <!-- CESTINO STILIZZATO PER AZZERARE I FILTRI -->
+                    <button class="drawer-action-icon" onclick="resetFilters()" title="AZZERA FILTRI">
+                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    </button>
+                    <button class="drawer-action-icon" onclick="toggleDrawer(false)" title="CHIUDI">✕</button>
+                </div>
             </div>
 
-            <div class="drawer-section-title">SITI WEB</div>
+            <div class="drawer-section-title">SITI WEB (1, 2, 3)</div>
             <div class="drawer-chips-grid">
-                <button class="drawer-chip full-width active" data-type="all" data-val="all" onclick="applyFilter('all', 'all', this)">TUTTI I SITI</button>
-                <button class="drawer-chip" data-type="source" data-val="IGN Italia" onclick="applyFilter('source', 'IGN Italia', this)">IGN ITALIA</button>
-                <button class="drawer-chip" data-type="source" data-val="Multiplayer.it" onclick="applyFilter('source', 'Multiplayer.it', this)">MULTIPLAYER.IT</button>
-                <button class="drawer-chip full-width" data-type="source" data-val="Everyeye.it" onclick="applyFilter('source', 'Everyeye.it', this)">EVERYEYE.IT</button>
+                <button class="drawer-chip" data-type="source" data-val="IGN Italia" onclick="toggleFilter('source', 'IGN Italia', this)">IGN ITALIA</button>
+                <button class="drawer-chip" data-type="source" data-val="Multiplayer.it" onclick="toggleFilter('source', 'Multiplayer.it', this)">MULTIPLAYER.IT</button>
+                <button class="drawer-chip full-width" data-type="source" data-val="Everyeye.it" onclick="toggleFilter('source', 'Everyeye.it', this)">EVERYEYE.IT</button>
             </div>
 
-            <div class="drawer-section-title">PIATTAFORME GAMING</div>
+            <div class="drawer-section-title">PIATTAFORME GAMING (1, 2, 3, 4)</div>
             <div class="drawer-chips-grid">
-                <button class="drawer-chip" data-type="platform" data-val="pc" onclick="applyFilter('platform', 'pc', this)">PC GAMING</button>
-                <button class="drawer-chip" data-type="platform" data-val="playstation" onclick="applyFilter('platform', 'playstation', this)">PLAYSTATION</button>
-                <button class="drawer-chip" data-type="platform" data-val="xbox" onclick="applyFilter('platform', 'xbox', this)">XBOX</button>
-                <button class="drawer-chip" data-type="platform" data-val="nintendo" onclick="applyFilter('platform', 'nintendo', this)">NINTENDO</button>
+                <button class="drawer-chip" data-type="platform" data-val="pc" onclick="toggleFilter('platform', 'pc', this)">PC GAMING</button>
+                <button class="drawer-chip" data-type="platform" data-val="playstation" onclick="toggleFilter('platform', 'playstation', this)">PLAYSTATION</button>
+                <button class="drawer-chip" data-type="platform" data-val="xbox" onclick="toggleFilter('platform', 'xbox', this)">XBOX</button>
+                <button class="drawer-chip" data-type="platform" data-val="nintendo" onclick="toggleFilter('platform', 'nintendo', this)">NINTENDO</button>
             </div>
         </div>
     </div>
@@ -377,7 +399,7 @@
             const canvas = document.createElement('canvas');
             canvas.width = 180; canvas.height = 180;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#7c3aed'; // SFONDO VIOLA RIPRISTINATO
+            ctx.fillStyle = '#7c3aed';
             ctx.fillRect(0, 0, 180, 180);
             ctx.font = '100px sans-serif';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -400,12 +422,16 @@
         };
 
         let allArticles = [];
-        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v14') || '[]');
+        let savedArticles = JSON.parse(localStorage.getItem('np_bookmarks_v14_2') || '[]');
         let currentTab = 'home';
-        let filterType = 'all'; 
-        let filterValue = 'all';
-        let notificationsActive = localStorage.getItem('np_notif_v14') === 'true';
+        
+        // Struttura filtri multipli cumulativi
+        let activeFilters = {
+            source: [],
+            platform: []
+        };
 
+        let notificationsActive = localStorage.getItem('np_notif_v14_2') === 'true';
         if(notificationsActive) {
             document.getElementById('notif-btn').classList.add('active-notif');
         }
@@ -416,25 +442,38 @@
             else drawer.classList.remove('open');
         }
 
+        // GESTIONE NOTIFICHE PUSH CORRETTA PER PWA MOBILE
         async function toggleNotifications() {
             const btn = document.getElementById('notif-btn');
+            
+            if (!('Notification' in window)) {
+                alert("LE NOTIFICHE NON SONO SUPPORTATE DAL TUO DISPOSITIVO O BROWSER.");
+                return;
+            }
+
             if (!notificationsActive) {
-                if ('Notification' in window) {
+                try {
                     const permission = await Notification.requestPermission();
                     if (permission === 'granted') {
                         notificationsActive = true;
                         btn.classList.add('active-notif');
-                        localStorage.setItem('np_notif_v14', 'true');
-                    } else {
-                        alert("PERMESSO NOTIFICHE NEGATO DAL BROWSER.");
+                        localStorage.setItem('np_notif_v14_2', 'true');
+                        
+                        // Notifica di test immediata per confermare l'attivazione
+                        new Notification("NEWSPAPER 🐤", {
+                            body: "NOTIFICHE ATTIVATE CON SUCCESSO!",
+                            icon: document.getElementById('apple-icon').href
+                        });
+                    } else if (permission === 'denied') {
+                        alert("HAI BLOCCATO LE NOTIFICHE. ABILITALE DALLE IMPOSTAZIONI DEL TELEFONO O DEL BROWSER.");
                     }
-                } else {
-                    alert("NOTIFICHE NON SUPPORTATE DA QUESTO DISPOSITIVO.");
+                } catch (e) {
+                    alert("ERRORE DURANTE L'ATTIVAZIONE DELLE NOTIFICHE.");
                 }
             } else {
                 notificationsActive = false;
                 btn.classList.remove('active-notif');
-                localStorage.setItem('np_notif_v14', 'false');
+                localStorage.setItem('np_notif_v14_2', 'false');
             }
         }
 
@@ -482,13 +521,10 @@
                     imgUrl = thumbnail.getAttribute("url");
                 } 
                 
-                if (!imgUrl) {
-                    const rawHtmlToScan = contentEncoded || description;
-                    if (rawHtmlToScan) {
-                        const docHtml = new DOMParser().parseFromString(rawHtmlToScan, 'text/html');
-                        const img = docHtml.querySelector('img');
-                        if (img && img.src && img.src.startsWith('http')) imgUrl = img.src;
-                    }
+                if (!imgUrl && (contentEncoded || description)) {
+                    const docHtml = new DOMParser().parseFromString(contentEncoded || description, 'text/html');
+                    const img = docHtml.querySelector('img');
+                    if (img && img.src && img.src.startsWith('http')) imgUrl = img.src;
                 }
 
                 return {
@@ -536,7 +572,7 @@
             if (index > -1) savedArticles.splice(index, 1);
             else savedArticles.push(article);
 
-            localStorage.setItem('np_bookmarks_v14', JSON.stringify(savedArticles));
+            localStorage.setItem('np_bookmarks_v14_2', JSON.stringify(savedArticles));
             renderArticles();
         }
 
@@ -558,12 +594,24 @@
             renderArticles();
         }
 
-        function applyFilter(type, value, element) {
-            filterType = type;
-            filterValue = value;
+        // GESTIONE FILTRI MULTIPLI E CUMULATIVI
+        function toggleFilter(type, value, element) {
+            const index = activeFilters[type].indexOf(value);
+            if (index > -1) {
+                activeFilters[type].splice(index, 1);
+                element.classList.remove('active');
+            } else {
+                activeFilters[type].push(value);
+                element.classList.add('active');
+            }
+            renderArticles();
+        }
+
+        // AZZERAMENTO FILTRI TRAMITE CESTINO
+        function resetFilters() {
+            activeFilters.source = [];
+            activeFilters.platform = [];
             document.querySelectorAll('.drawer-chip').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
-            toggleDrawer(false);
             renderArticles();
         }
 
@@ -588,11 +636,15 @@
 
             const filtered = targetList.filter(art => {
                 const matchesSearch = art.title.toLowerCase().includes(searchQuery) || art.snippet.toLowerCase().includes(searchQuery);
-                let matchesFilter = true;
-                if (filterType === 'source') matchesFilter = art.source === filterValue;
-                else if (filterType === 'platform') matchesFilter = isPlatformMatch(art, filterValue);
+                
+                // Logica filtri multipli cumulativi (OR tra elementi dello stesso tipo, AND tra tipi diversi se entrambi attivi)
+                const hasSourceFilters = activeFilters.source.length > 0;
+                const hasPlatformFilters = activeFilters.platform.length > 0;
 
-                return matchesSearch && matchesFilter;
+                const matchesSource = !hasSourceFilters || activeFilters.source.includes(art.source);
+                const matchesPlatform = !hasPlatformFilters || activeFilters.platform.some(p => isPlatformMatch(art, p));
+
+                return matchesSearch && matchesSource && matchesPlatform;
             });
 
             grid.innerHTML = "";
@@ -600,8 +652,8 @@
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="status-box">
-                        <p>${currentTab === 'saved' ? 'NESSUN ARTICOLO SALVATO.' : 'NESSUN ARTICOLO TROVATO.'}</p>
-                        <button onclick="manualRefresh()" style="margin-top:10px; padding: 7px 14px; background:var(--primary); border:none; border-radius:8px; font-weight:800; font-size:0.75rem; color:#030712; cursor:pointer;">AGGIORNA ORA</button>
+                        <p>${currentTab === 'saved' ? 'NESSUN ARTICOLO SALVATO.' : 'NESSUN ARTICOLO TROVATO CON QUESTI FILTRI.'}</p>
+                        <button onclick="resetFilters(); manualRefresh();" style="margin-top:10px; padding: 7px 14px; background:var(--primary); border:none; border-radius:8px; font-weight:800; font-size:0.75rem; color:#030712; cursor:pointer;">AZZERA E AGGIORNA</button>
                     </div>`;
                 return;
             }
