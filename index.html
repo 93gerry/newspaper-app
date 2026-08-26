@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v7.5</title>
+    <title>NewsPaper 🐤 v8.0</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,7 +100,7 @@
         .filter-row::-webkit-scrollbar { display: none; }
         .row-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-sub); min-width: 65px; flex-shrink: 0; }
         
-        .tag-chip { background: var(--surface); color: var(--text-sub); border: 1px solid var(--border); padding: 4px 10px; border-radius: 99px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .tag-chip { background: var(--surface); color: var(--text-sub); border: 1px solid var(--border); padding: 5px 12px; border-radius: 99px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; cursor: pointer; display: flex; align-items: center; letter-spacing: 0.5px; }
         .tag-chip.active { color: #fff; border-color: transparent; }
         .tag-chip[data-color="all"].active { background: var(--c-all); }
         .tag-chip[data-color="ign"].active { background: var(--c-ign); }
@@ -199,22 +199,22 @@
 
             <div class="filters-container">
                 <div class="filter-row">
-                    <button class="tag-chip active" data-color="all" onclick="setFilter('all', 'all', this)">🌐 Tutti i 3 Siti</button>
+                    <button class="tag-chip active" data-color="all" onclick="setFilter('all', 'all', this)">TUTTI I 3 SITI</button>
                 </div>
 
                 <div class="filter-row">
                     <span class="row-label">Siti Web</span>
-                    <button class="tag-chip" data-color="ign" onclick="setFilter('source', 'IGN Italia', this)">🔥 IGN Italia</button>
-                    <button class="tag-chip" data-color="multi" onclick="setFilter('source', 'Multiplayer.it', this)">⚡ Multiplayer</button>
-                    <button class="tag-chip" data-color="every" onclick="setFilter('source', 'Everyeye.it', this)">🎯 Everyeye</button>
+                    <button class="tag-chip" data-color="ign" onclick="setFilter('source', 'IGN Italia', this)">IGN ITALIA</button>
+                    <button class="tag-chip" data-color="multi" onclick="setFilter('source', 'Multiplayer.it', this)">MULTIPLAYER.IT</button>
+                    <button class="tag-chip" data-color="every" onclick="setFilter('source', 'Everyeye.it', this)">EVERYEYE.IT</button>
                 </div>
 
                 <div class="filter-row">
                     <span class="row-label">Piattaforme</span>
-                    <button class="tag-chip" data-color="pc" onclick="setFilter('platform', 'pc', this)">💻 PC</button>
-                    <button class="tag-chip" data-color="ps" onclick="setFilter('platform', 'playstation', this)">🎮 PlayStation</button>
-                    <button class="tag-chip" data-color="xbox" onclick="setFilter('platform', 'xbox', this)">🟢 Xbox</button>
-                    <button class="tag-chip" data-color="nintendo" onclick="setFilter('platform', 'nintendo', this)">🔴 Nintendo</button>
+                    <button class="tag-chip" data-color="pc" onclick="setFilter('platform', 'pc', this)">PC</button>
+                    <button class="tag-chip" data-color="ps" onclick="setFilter('platform', 'playstation', this)">PLAYSTATION</button>
+                    <button class="tag-chip" data-color="xbox" onclick="setFilter('platform', 'xbox', this)">XBOX</button>
+                    <button class="tag-chip" data-color="nintendo" onclick="setFilter('platform', 'nintendo', this)">NINTENDO</button>
                 </div>
             </div>
         </header>
