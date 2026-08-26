@@ -12,10 +12,10 @@
     
     <title>NewsPaper 🐤</title>
 
-    <!-- Manifest integrato -->
-    <link rel="manifest" href='data:application/json,{"name":"NewsPaper Gaming","short_name":"NewsPaper","start_url":".","display":"standalone","background_color":"#090d16","theme_color":"#090d16"}'>
+    <!-- Manifest integrato per Android/PWA -->
+    <link rel="manifest" href='data:application/json,{"name":"NewsPaper Gaming","short_name":"NewsPaper","start_url":".","display":"standalone","background_color":"#090d16","theme_color":"#090d16","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27512%27 height=%27512%27 viewBox=%270 0 180 180%27%3E%3Crect width=%27180%27 height=%27180%27 rx=%2740%27 fill=%27%235b21b6%27/%3E%3Ctext x=%2750%25%27 y=%2755%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27 font-size=%27105%27%3E🐤%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}'>
 
-    <!-- Icona App iPhone -->
+    <!-- ICONA HOME SCREEN APPLE (Sfondo Viola + Paperella) -->
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%235b21b6'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='105'%3E🐤%3C/text%3E%3C/svg%3E">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,7 +64,6 @@
             position: relative;
         }
 
-        /* BARRA SUPERIORE ADATTATA ALLA DYNAMIC ISLAND / NOTCH */
         .top-bar { 
             flex-shrink: 0;
             z-index: 900; 
@@ -76,7 +75,7 @@
             padding-top: calc(env(safe-area-inset-top, 20px) + 8px);
         }
 
-        .header-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .header-main { display: flex; justify-space-between; align-items: center; margin-bottom: 10px; }
         .brand { display: flex; align-items: center; gap: 10px; }
         .brand-logo { background: #5b21b6; border: 1px solid rgba(255,255,255,0.15); width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 1.2rem; box-shadow: 0 4px 14px rgba(91, 33, 182, 0.4); }
         .brand-title { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
@@ -113,7 +112,6 @@
         .tag-chip[data-color="xbox"].active { background: var(--c-xbox); }
         .tag-chip[data-color="nintendo"].active { background: var(--c-nintendo); }
 
-        /* AREA CONTENUTO FISSA E SCORREVOLE */
         .scrollable-content {
             flex-grow: 1;
             overflow-y: auto;
@@ -124,7 +122,7 @@
 
         .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; max-width: 1100px; margin: 0 auto; }
 
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; color: inherit; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; color: inherit; text-decoration: none; }
         .card:active { transform: scale(0.98); }
         .card-cover { width: 100%; height: 160px; position: relative; background: #1a233a; }
         .card-img { width: 100%; height: 100%; object-fit: cover; }
@@ -160,13 +158,6 @@
 
         .status-box { grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--text-sub); }
         .spinner { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
-
-        /* VIEWER IN-APP PER NON USCIRE DALL'APP */
-        .reader-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
-        .reader-modal.open { transform: translateY(0); }
-        .reader-header { padding: calc(env(safe-area-inset-top, 20px) + 8px) 16px 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .btn-close-reader { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
-        .reader-iframe { width: 100%; flex-grow: 1; border: none; background: #fff; }
     </style>
 </head>
 <body>
@@ -247,14 +238,6 @@
 
     </div>
 
-    <div class="reader-modal" id="reader-modal">
-        <div class="reader-header">
-            <button class="btn-close-reader" onclick="closeReader()">✕ Chiudi</button>
-            <span id="reader-source" style="font-size: 0.75rem; font-weight: 800; color: var(--text-sub);">NOTIZIA</span>
-        </div>
-        <iframe id="reader-iframe" class="reader-iframe" src="about:blank"></iframe>
-    </div>
-
     <script>
         const FEEDS = [
             { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#dc2626" },
@@ -332,7 +315,6 @@
             });
         }
 
-        /* SCANSIONE MULTI-PROXY A ROTAZIONE VELOCE */
         async function fetchFeed(source) {
             const ts = Date.now();
             const proxies = [
@@ -351,17 +333,6 @@
                 } catch (e) {}
             }
             return [];
-        }
-
-        function openArticle(url, source) {
-            document.getElementById('reader-source').innerText = source.toUpperCase();
-            document.getElementById('reader-iframe').src = url;
-            document.getElementById('reader-modal').classList.add('open');
-        }
-
-        function closeReader() {
-            document.getElementById('reader-modal').classList.remove('open');
-            document.getElementById('reader-iframe').src = "about:blank";
         }
 
         function toggleBookmark(e, artId) {
@@ -454,9 +425,11 @@
                 const dateStr = isNaN(dateObj) ? "" : dateObj.toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
                 const showNewBadge = isNew(art.date);
 
-                const card = document.createElement("div");
+                const card = document.createElement("a");
                 card.className = "card";
-                card.onclick = () => openArticle(art.link, art.source);
+                card.href = art.link;
+                card.target = "_blank";
+                card.rel = "noopener noreferrer";
 
                 card.innerHTML = `
                     <div class="card-cover">
@@ -479,7 +452,6 @@
             });
         }
 
-        /* AGGIORNAMENTO AUTOMATICO OGNI 60 SECONDI (1 MINUTO) */
         setInterval(loadAllNews, 60000);
         loadAllNews();
     </script>
