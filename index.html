@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v7.1 Live</title>
+    <title>NewsPaper 🐤 v7.2</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -367,18 +367,17 @@
         }
 
         async function fetchFeedFast(source) {
-            // Parametro anti-cache estremamente aggressivo basato sul millisecondo corrente
-            const uniqueStamp = Date.now() + Math.random();
+            const ts = Date.now();
             const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_nc=${uniqueStamp}`,
-                `https://corsproxy.io/?${encodeURIComponent(source.url)}?_nc=${uniqueStamp}`
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&t=${ts}`,
+                `https://corsproxy.io/?${encodeURIComponent(source.url)}`
             ];
 
             for (let proxyUrl of proxies) {
                 try {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 4000);
-                    const res = await fetch(proxyUrl, { signal: controller.signal, cache: 'no-store' });
+                    const res = await fetch(proxyUrl, { signal: controller.signal });
                     clearTimeout(timeoutId);
                     
                     if (res.ok) {
@@ -424,7 +423,6 @@
                 let freshArticles = results.flat();
 
                 if (freshArticles.length > 0) {
-                    // Ordina sempre per data decrescente in modo rigoroso (dal più recente al meno recente al minuto)
                     allArticles = freshArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
                 }
             } catch (err) {}
@@ -520,10 +518,9 @@
             });
         }
 
-        // Primo avvio
         loadAllNews();
 
-        // Auto-refresh in background ogni 3 minuti per catturare gli articoli minuto per minuto
+        // Controllo automatico ogni 3 minuti
         setInterval(() => {
             loadAllNews();
         }, 180000);
