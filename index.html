@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#090d16">
     
-    <title>NewsPaper 🐤 v6.7</title>
+    <title>NewsPaper 🐤 v6.8</title>
     <link id="apple-icon" rel="apple-touch-icon" href="">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -224,7 +224,7 @@
             <div class="news-grid" id="news-grid">
                 <div class="status-box">
                     <div class="spinner"></div>
-                    <p>Caricamento contenuti...</p>
+                    <p>Scaricamento notizie in corso...</p>
                 </div>
             </div>
         </main>
@@ -312,128 +312,35 @@
             return (diffMs / (1000 * 60 * 60)) < 3;
         }
 
-        function parseRSSDate(dateStr) {
-            if (!dateStr) return new Date();
-            let d = new Date(dateStr);
-            return isNaN(d.getTime()) ? new Date() : d;
-        }
-
-        function parseRawXML(xmlString, source) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-            const items = Array.from(xmlDoc.querySelectorAll("item"));
-
-            return items.map((item) => {
-                const title = item.querySelector("title")?.textContent || "";
+        async function fetchFeedViaAPI(source) {
+            const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}`;
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
                 
-                let link = "";
-                const linkEl = item.querySelector("link");
-                if (linkEl) link = linkEl.textContent.trim();
-                if (!link || link.startsWith("<")) {
-                    const guidEl = item.querySelector("guid");
-                    if (guidEl && guidEl.textContent.startsWith("http")) link = guidEl.textContent.trim();
-                }
-
-                const description = item.querySelector("description")?.textContent || "";
-                const contentEncoded = item.getElementsByTagNameNS("*", "encoded")[0]?.textContent || "";
-                const pubDate = item.querySelector("pubDate")?.textContent || "";
-                const guid = item.querySelector("guid")?.textContent || link;
-
-                let imgUrl = "";
-                const mediaContent = item.getElementsByTagName("media:content")[0];
-                const enclosure = item.querySelector("enclosure");
-                const thumbnail = item.getElementsByTagName("media:thumbnail")[0];
-
-                if (mediaContent && mediaContent.getAttribute("url")) {
-                    imgUrl = mediaContent.getAttribute("url");
-                } else if (enclosure && enclosure.getAttribute("url") && enclosure.getAttribute("type", "").includes("image")) {
-                    imgUrl = enclosure.getAttribute("url");
-                } else if (thumbnail && thumbnail.getAttribute("url")) {
-                    imgUrl = thumbnail.getAttribute("url");
-                } 
-                
-                if (!imgUrl) {
-                    const rawHtmlToScan = contentEncoded || description;
-                    if (rawHtmlToScan) {
-                        const docHtml = new DOMParser().parseFromString(rawHtmlToScan, 'text/html');
-                        const img = docHtml.querySelector('img');
-                        if (img && img.src && img.src.startsWith('http')) imgUrl = img.src;
-                    }
-                }
-
-                return {
-                    id: guid + "_" + source.name,
-                    source: source.name,
-                    sourceColor: source.color,
-                    title: cleanText(title),
-                    link: link,
-                    snippet: cleanText(description).slice(0, 130) + "...",
-                    image: imgUrl,
-                    date: parseRSSDate(pubDate)
-                };
-            }).filter(art => art.title && art.link);
-        }
-
-        async function fetchFeedFast(source) {
-            const ts = Date.now();
-            const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(source.url)}&_t=${ts}`,
-                `https://corsproxy.io/?${encodeURIComponent(source.url)}`
-            ];
-
-            for (let proxyUrl of proxies) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 4000);
-                    const res = await fetch(proxyUrl, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    
-                    if (res.ok) {
-                        let text = await res.text();
-                        if (text && (text.includes("<item>") || text.includes("<rss"))) {
-                            const parsed = parseRawXML(text, source);
-                            if (parsed.length > 0) return parsed;
+                if (data && data.status === 'ok' && data.items) {
+                    return data.items.map(item => {
+                        let imgUrl = item.thumbnail || item.enclosure?.link || "";
+                        if (!imgUrl && item.description) {
+                            const docHtml = new DOMParser().parseFromString(item.description, 'text/html');
+                            const img = docHtml.querySelector('img');
+                            if (img && img.src) imgUrl = img.src;
                         }
-                    }
-                } catch (e) {}
-            }
-            return [];
-        }
 
-        function getCuratedArticles() {
-            // Dati aggiornati di riserva per garantire l'apertura immediata dell'app
-            return [
-                {
-                    id: "cur_1",
-                    source: "IGN Italia",
-                    sourceColor: "#dc2626",
-                    title: "Le ultime uscite e recensioni dal mondo dei videogiochi",
-                    link: "https://it.ign.com",
-                    snippet: "Aggiornamenti quotidiani su PC, console e produzioni videoludiche di rilievo.",
-                    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600",
-                    date: new Date()
-                },
-                {
-                    id: "cur_2",
-                    source: "Multiplayer.it",
-                    sourceColor: "#ea580c",
-                    title: "Speciali, anteprime e prove su strada hardware e software",
-                    link: "https://multiplayer.it",
-                    snippet: "Approfondimenti dedicati alle piattaforme di gioco più diffuse e ai titoli in arrivo.",
-                    image: "https://images.unsplash.com/photo-1612287233202-b51a3ed615c8?w=600",
-                    date: new Date(Date.now() - 3600000)
-                },
-                {
-                    id: "cur_3",
-                    source: "Everyeye.it",
-                    sourceColor: "#2563eb",
-                    title: "Tendenze, cinema, serie TV e intrattenimento digitale",
-                    link: "https://www.everyeye.it",
-                    snippet: "Notizie e recensioni dal panorama dell'intrattenimento multimediale.",
-                    image: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=600",
-                    date: new Date(Date.now() - 7200000)
+                        return {
+                            id: item.guid || item.link + "_" + source.name,
+                            source: source.name,
+                            sourceColor: source.color,
+                            title: cleanText(item.title),
+                            link: item.link,
+                            snippet: cleanText(item.description).slice(0, 130) + "...",
+                            image: imgUrl,
+                            date: new Date(item.pubDate)
+                        };
+                    });
                 }
-            ];
+            } catch (e) {}
+            return [];
         }
 
         function toggleBookmark(e, artId) {
@@ -463,19 +370,13 @@
 
         async function loadAllNews() {
             try {
-                const results = await Promise.all(FEEDS.map(feed => fetchFeedFast(feed)));
+                const results = await Promise.all(FEEDS.map(feed => fetchFeedViaAPI(feed)));
                 let freshArticles = results.flat();
 
                 if (freshArticles.length > 0) {
                     allArticles = freshArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-                } else if (allArticles.length === 0) {
-                    allArticles = getCuratedArticles();
                 }
-            } catch (err) {
-                if (allArticles.length === 0) {
-                    allArticles = getCuratedArticles();
-                }
-            }
+            } catch (err) {}
             renderArticles();
         }
 
@@ -522,7 +423,7 @@
             if (limitedList.length === 0) {
                 grid.innerHTML = `
                     <div class="status-box">
-                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Nessun articolo trovato.'}</p>
+                        <p>${currentTab === 'saved' ? 'Nessun articolo salvato nei preferiti.' : 'Caricamento notizie o connessione assente...'}</p>
                         <button onclick="manualRefresh()" style="margin-top:10px; padding: 6px 12px; background:var(--primary); border:none; border-radius:8px; font-weight:700; color:#000; cursor:pointer;">Aggiorna</button>
                     </div>`;
                 return;
