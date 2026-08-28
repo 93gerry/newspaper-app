@@ -1,13 +1,13 @@
 :root {
     --bg-base: #060913;
     --paper-bg: #f8fafc;
-    --border: rgba(255, 255, 255, 0.12);
+    --border: rgba(255, 255, 255, 0.1);
     --primary: #4f46e5;
     --text-main: #0f172a;
     --text-sub: #475569;
     --shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7);
-    --glass-bg: rgba(15, 23, 42, 0.45);
-    --glass-border: rgba(255, 255, 255, 0.15);
+    --glass-bg: rgba(15, 23, 42, 0.35);
+    --glass-border: rgba(255, 255, 255, 0.12);
 
     --badge-ign: #dc2626;
     --badge-ign-bg: #fee2e2;
@@ -21,6 +21,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; text-transform: uppercase; }
 
+*:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
 body { 
     background: var(--bg-base);
     color: var(--text-main); 
@@ -31,6 +36,33 @@ body {
     flex-direction: column; 
     overflow: hidden; 
     perspective: 1200px;
+}
+
+/* Toast Notifica per Nuove Notizie */
+.toast-update {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(79, 70, 229, 0.9);
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    z-index: 250;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+    0% { transform: translate(-50%, -100%); opacity: 0; }
+    100% { transform: translate(-50%, 0); opacity: 1; }
 }
 
 .newspaper-viewport {
@@ -70,7 +102,6 @@ body {
     pointer-events: auto;
 }
 
-/* Adattivo a schermo intero con bordo ridotto e sicuro ovunque */
 .page-paper {
     background: var(--paper-bg);
     width: 100%;
@@ -108,8 +139,8 @@ body {
 .page-time { font-size: 0.62rem; font-weight: 700; color: var(--text-sub); }
 
 .star-btn { 
-    background: rgba(245, 158, 11, 0.12); 
-    border: 1px solid rgba(245, 158, 11, 0.3); 
+    background: rgba(245, 158, 11, 0.1); 
+    border: 1px solid rgba(245, 158, 11, 0.25); 
     width: 34px; height: 34px;
     border-radius: 50%;
     display: grid;
@@ -170,13 +201,13 @@ body {
     position: fixed;
     top: 50%;
     transform: translateY(-50%);
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: 50%;
-    font-size: 1rem;
-    color: #fff;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.85);
     cursor: pointer;
     z-index: 150;
     display: flex;
@@ -185,13 +216,11 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: var(--shadow);
+    transition: background 0.2s, transform 0.2s;
 }
-.arrow-nav.prev { left: 16px; }
-.arrow-nav.next { right: 16px; }
-
-@media (max-width: 820px) {
-    .arrow-nav { display: none !important; }
-}
+.arrow-nav:hover { background: rgba(15, 23, 42, 0.6); transform: translateY(-50%) scale(1.05); }
+.arrow-nav.prev { left: 12px; }
+.arrow-nav.next { right: 12px; }
 
 .page-dots {
     position: fixed;
@@ -209,7 +238,7 @@ body {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
     cursor: pointer;
     transition: transform 0.2s, background 0.2s;
     flex-shrink: 0;
@@ -219,14 +248,13 @@ body {
     transform: scale(1.3);
 }
 
-/* Menu in basso altamente stilizzato Glassmorphism */
 nav { 
     position: fixed; 
     bottom: 14px; 
     left: 50%; 
     transform: translateX(-50%); 
-    background: var(--glass-bg); 
-    border: 1px solid var(--glass-border); 
+    background: rgba(15, 23, 42, 0.25); 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
     border-radius: 40px; 
     padding: 6px 14px; 
     display: flex; 
@@ -238,38 +266,37 @@ nav {
 }
 
 .nav-btn { 
-    background: rgba(255, 255, 255, 0.03); 
-    border: 1px solid rgba(255, 255, 255, 0.06); 
-    color: #94a3b8; 
-    width: 52px;
-    height: 46px;
-    font-size: 1.3rem; 
-    border-radius: 23px; 
+    background: transparent; 
+    border: none; 
+    color: rgba(148, 163, 184, 0.7); 
+    width: 48px;
+    height: 42px;
+    font-size: 1.2rem; 
+    border-radius: 21px; 
     cursor: pointer; 
     display: grid;
     place-items: center;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
 }
-.nav-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.nav-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
 .nav-btn.active { 
     background: var(--primary); 
-    border-color: rgba(255, 255, 255, 0.3);
     color: #fff; 
     box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
 }
 
-/* Pulsanti Fluttuanti Glassmorphism Stilizzati */
 .floating-action-btn {
     position: fixed;
     bottom: 20px;
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
     color: #fff;
     cursor: pointer;
     backdrop-filter: blur(16px);
@@ -277,15 +304,15 @@ nav {
     z-index: 200;
     box-shadow: var(--shadow);
     transition: all 0.2s;
+    line-height: 1;
 }
 .floating-action-btn:hover { background: rgba(255, 255, 255, 0.12); transform: scale(1.05); }
 .filter-float-btn { left: 20px; }
 .search-float-btn { right: 20px; }
 
-/* Modali Minimal e Glassmorphic */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(6, 9, 19, 0.7); backdrop-filter: blur(12px);
+    background: rgba(6, 9, 19, 0.65); backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     z-index: 300; display: none; align-items: center; justify-content: center;
     padding: 16px;
@@ -293,7 +320,7 @@ nav {
 .modal-overlay.open { display: flex; }
 
 .modal-body {
-    background: rgba(15, 23, 42, 0.75); 
+    background: rgba(15, 23, 42, 0.7); 
     border: 1px solid var(--glass-border); 
     border-radius: 24px; 
     padding: 24px; 
@@ -318,7 +345,7 @@ nav {
 .filter-group { display: flex; flex-direction: column; gap: 6px; }
 
 .modal-select { 
-    background: rgba(15, 23, 42, 0.6); 
+    background: rgba(15, 23, 42, 0.5); 
     color: #fff; 
     border: 1px solid var(--glass-border); 
     padding: 14px; 
