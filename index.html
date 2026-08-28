@@ -97,7 +97,6 @@
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* MODAL FILTRI */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
@@ -324,5 +323,86 @@
             document.getElementById('filter-modal').classList.toggle('open', open);
         }
 
+        async function fetchWithTimeout(url, timeout = 4000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (e) {
+                clearTimeout(id);
+                return null;
+            }
+        }
+
         async function fetchProxy(url) {
-            const proxies =
+            const proxies = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+            ];
+            for (let p of proxies) {
+                let r = await fetchWithTimeout(p, 3500);
+                if (r && r.ok) {
+                    let text = await r.text();
+                    if (text && text.length > 100) return text;
+                }
+            }
+            return null;
+        }
+
+        function extractImage(item, desc, contentEncoded) {
+            let mediaContent = item.getElementsByTagName("media:content")[0] || item.getElementsByTagName("media:thumbnail")[0];
+            if (mediaContent && mediaContent.getAttribute("url")) {
+                return mediaContent.getAttribute("url");
+            }
+            let enclosure = item.querySelector("enclosure");
+            if (enclosure && enclosure.getAttribute("url")) {
+                return enclosure.getAttribute("url");
+            }
+            let fullText = (desc || '') + ' ' + (contentEncoded || '');
+            let imgMatch = fullText.match(/src=["'](.*?\.(?:png|jpg|jpeg|webp))["']/i);
+            if (imgMatch && imgMatch[1]) {
+                return imgMatch[1];
+            }
+            return null;
+        }
+
+        function parseXML(xmlStr, source, type) {
+            if (!xmlStr) return [];
+            try {
+                let xml = new DOMParser().parseFromString(xmlStr, "text/xml");
+                return Array.from(xml.querySelectorAll("item")).map(i => {
+                    const link = (i.querySelector("link")?.textContent || "#").trim();
+                    const title = (i.querySelector("title")?.textContent || "").replace(/<[^>]*>?/gm, '').trim();
+                    const rawDesc = i.querySelector("description")?.textContent || "";
+                    const contentEncoded = i.getElementsByTagName("content:encoded")[0]?.textContent || "";
+                    const desc = rawDesc.replace(/<[^>]*>?/gm, '').slice(0, 95) + "...";
+                    const img = extractImage(i, rawDesc, contentEncoded);
+
+                    return {
+                        id: link || title,
+                        title: title,
+                        link: link,
+                        desc: desc,
+                        image: img,
+                        source: source,
+                        type: type
+                    };
+                });
+            } catch(e) { return []; }
+        }
+
+        async function loadData() {
+            articles = [];
+            deals = [];
+
+            const newsPromises = FEEDS.map(async f => {
+                let xml = await fetchProxy(f.url);
+                if (xml) articles.push(...parseXML(xml, f.name, 'news'));
+            });
+
+            const dealsPromise = (async () => {
+                let dealsXml = await fetchProxy("https://www.instant-gaming.com/it/feed/rss/");
+                if (dealsXml
