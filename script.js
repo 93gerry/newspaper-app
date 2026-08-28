@@ -8,8 +8,10 @@ const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
 
 let articles = [];
 let deals = [];
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v8') || '[]');
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v9') || '[]');
 let currentTab = 'news';
+let currentPageIndex = 0;
+let totalPages = 0;
 let debounceTimer;
 
 function toggleModal(open) {
@@ -42,16 +44,16 @@ function extractImageFromText(text) {
     return match ? match[1] : null;
 }
 
-function parseFeedXML(xmlText) {
+function parseXMLDoc(xmlString) {
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xmlText, "text/xml");
+    const doc = parser.parseFromString(xmlString, "text/xml");
     const items = doc.querySelectorAll("item");
     
     return Array.from(items).map(i => {
         const title = (i.querySelector("title")?.textContent || "").replace(/<[^>]*>?/gm, '').trim();
         const link = (i.querySelector("link")?.textContent || "#").trim();
         const pubDate = i.querySelector("pubDate")?.textContent || "";
-        const descRaw = i.querySelector("description")?.textContent || "";
+        const descRaw = i.querySelector("description")?.textContent || i.querySelector("content\\:encoded")?.textContent || "";
         
         let img = null;
         const mediaContent = i.getElementsByTagName("media:content")[0];
@@ -74,35 +76,28 @@ function parseFeedXML(xmlText) {
             id: link || title,
             title: title,
             link: link,
-            desc: cleanDesc.length > 90 ? cleanDesc.slice(0, 90) + "..." : cleanDesc,
+            desc: cleanDesc.length > 160 ? cleanDesc.slice(0, 160) + "..." : cleanDesc,
             image: img,
             time: formatDateTime(pubDate)
         };
     });
 }
 
+// Fetcher dedicato con fallback multiplo ultra-affidabile per Instant Gaming e News
 async function fetchFeed(url) {
-    // Tentativo 1: AllOrigins (restituisce il sorgente grezzo evitando problemi CORS)
+    // Strategia 1: Proxy CorsProxy con query diretta
     try {
-        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
         if (res.ok) {
-            const text = await res.text();
-            const parsed = parseFeedXML(text);
-            if (parsed && parsed.length > 0) return parsed;
+            const data = await res.json();
+            if (data?.contents) {
+                const parsed = parseXMLDoc(data.contents);
+                if (parsed.length > 0) return parsed;
+            }
         }
     } catch(e) {}
 
-    // Tentativo 2: CorsProxy
-    try {
-        const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
-        if (res.ok) {
-            const text = await res.text();
-            const parsed = parseFeedXML(text);
-            if (parsed && parsed.length > 0) return parsed;
-        }
-    } catch(e) {}
-
-    // Tentativo 3: RSS2JSON
+    // Strategia 2: RSS2JSON api
     try {
         const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
         if (res.ok) {
@@ -112,7 +107,7 @@ async function fetchFeed(url) {
                     id: i.link || i.guid,
                     title: i.title,
                     link: i.link,
-                    desc: (i.description || '').replace(/<[^>]*>?/gm, '').slice(0, 90) + '...',
+                    desc: (i.description || '').replace(/<[^>]*>?/gm, '').slice(0, 160) + '...',
                     image: i.thumbnail || i.enclosure?.link || extractImageFromText(i.description),
                     time: formatDateTime(i.pubDate)
                 }));
@@ -124,9 +119,6 @@ async function fetchFeed(url) {
 }
 
 async function loadData() {
-    articles = [];
-    deals = [];
-
     const newsPromises = FEEDS.map(f => 
         fetchFeed(f.url).then(items => 
             items.map(i => ({ ...i, source: f.name, sourceClass: f.class, type: 'news' }))
@@ -144,6 +136,9 @@ async function loadData() {
 
     const results = await Promise.allSettled([...newsPromises, dealsPromise]);
 
+    articles = [];
+    deals = [];
+
     results.forEach((res, idx) => {
         if (res.status === 'fulfilled' && Array.isArray(res.value)) {
             if (idx < FEEDS.length) {
@@ -160,10 +155,6 @@ async function loadData() {
 async function manualRefresh() {
     const btn = document.getElementById('refresh-btn');
     if (btn) btn.classList.add('spinning');
-    
-    const grid = document.getElementById('grid');
-    if (grid) grid.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
-
     await loadData();
     if (btn) btn.classList.remove('spinning');
 }
@@ -183,12 +174,13 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v8', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v9', JSON.stringify(savedItems));
     render();
 }
 
 function switchTab(t) {
     currentTab = t;
+    currentPageIndex = 0;
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(`tab-${t}`);
     if (activeBtn) activeBtn.classList.add('active');
@@ -197,45 +189,115 @@ function switchTab(t) {
 
 function debounceRender() {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(render, 150);
+    debounceTimer = setTimeout(() => {
+        currentPageIndex = 0;
+        render();
+    }, 150);
 }
 
-function createCardElement(item) {
+function createPageElement(item, index, total) {
     const isSaved = savedItems.some(s => s.id === item.id);
-    const card = document.createElement('a');
-    card.className = 'card';
-    card.href = item.link;
-    card.target = '_blank';
-    card.rel = 'noopener noreferrer';
+    const page = document.createElement('div');
+    page.className = 'newspaper-page';
 
     const imageHTML = item.image ? `
-        <div class="card-cover">
-            <img class="card-img" src="${item.image}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'">
+        <div class="page-cover">
+            <img class="page-img" src="${item.image}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'">
         </div>
-    ` : '';
+    ` : '<div class="page-cover-placeholder">🐤 NEWSPAPER EDITION</div>';
 
-    const timeHTML = item.time ? `<span class="card-time">🕒 ${item.time}</span>` : '';
+    const timeHTML = item.time ? `<span class="page-time">🕒 ${item.time}</span>` : '';
 
-    card.innerHTML = `
-        ${imageHTML}
-        <div class="card-body">
-            <div class="card-header">
-                <div class="card-meta">
+    page.innerHTML = `
+        <div class="page-paper">
+            <div class="page-header">
+                <div class="page-meta">
                     <span class="card-tag ${item.sourceClass || 'ig'}">${item.source}</span>
                     ${timeHTML}
                 </div>
                 <button class="star-btn ${isSaved ? 'active' : ''}" onclick="toggleSave(event, '${item.id.replace(/'/g, "\\'")}')">⭐</button>
             </div>
-            <h2 class="card-title">${item.title}</h2>
-            <p class="card-desc">${item.desc}</p>
+            
+            <h1 class="page-title">${item.title}</h1>
+            
+            ${imageHTML}
+            
+            <div class="page-body">
+                <p class="page-desc">${item.desc}</p>
+            </div>
+
+            <div class="page-footer">
+                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-btn">LEGGI ARTICOLO COMPLETO ➔</a>
+            </div>
         </div>
     `;
-    return card;
+    return page;
 }
 
+function updatePagePosition() {
+    const track = document.getElementById('newspaper-track');
+    const indicator = document.getElementById('page-indicator');
+    
+    if (track) {
+        track.style.transform = `translateX(-${currentPageIndex * 100}vw)`;
+    }
+    
+    if (indicator) {
+        indicator.textContent = totalPages > 0 ? `PAGINA ${currentPageIndex + 1} DI ${totalPages}` : `PAGINA 0 DI 0`;
+    }
+
+    const prevBtn = document.getElementById('arrow-prev');
+    const nextBtn = document.getElementById('arrow-next');
+    if (prevBtn) prevBtn.style.display = currentPageIndex > 0 ? 'flex' : 'none';
+    if (nextBtn) nextBtn.style.display = currentPageIndex < totalPages - 1 ? 'flex' : 'none';
+}
+
+function prevPage() {
+    if (currentPageIndex > 0) {
+        currentPageIndex--;
+        updatePagePosition();
+    }
+}
+
+function nextPage() {
+    if (currentPageIndex < totalPages - 1) {
+        currentPageIndex++;
+        updatePagePosition();
+    }
+}
+
+// Gestione gesti Touch / Swipe Orizzontale
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+}, { passive: true });
+
+function handleSwipe() {
+    const swipeThreshold = 50;
+    if (touchEndX < touchStartX - swipeThreshold) {
+        nextPage();
+    }
+    if (touchEndX > touchStartX + swipeThreshold) {
+        prevPage();
+    }
+}
+
+// Gestione tastiera (frecce destra/sinistra)
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') nextPage();
+    if (e.key === 'ArrowLeft') prevPage();
+});
+
 function render() {
-    const grid = document.getElementById('grid');
-    if (!grid) return;
+    const track = document.getElementById('newspaper-track');
+    if (!track) return;
 
     const searchInput = document.getElementById('search');
     const newsSourceSelect = document.getElementById('news-source-filter');
@@ -245,40 +307,14 @@ function render() {
     const newsSource = newsSourceSelect ? newsSourceSelect.value : 'ALL';
     const platformFilter = platformSelect ? platformSelect.value : 'ALL';
 
-    grid.innerHTML = "";
-    const fragment = document.createDocumentFragment();
+    track.innerHTML = "";
+    let list = [];
 
     if (currentTab === 'saved') {
-        const savedFiltered = savedItems.filter(i => i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q));
-
-        if (savedFiltered.length === 0) {
-            grid.innerHTML = `<div class="status-box">NESSUN PREFERITO SALVATO.</div>`;
-            return;
-        }
-
-        const savedNewsList = savedFiltered.filter(i => i.type === 'news');
-        const savedDealsList = savedFiltered.filter(i => i.type === 'deal');
-
-        if (savedNewsList.length > 0) {
-            const div = document.createElement('div');
-            div.className = 'section-divider';
-            div.textContent = '📰 NEWS PREFERITE';
-            fragment.appendChild(div);
-            savedNewsList.forEach(item => fragment.appendChild(createCardElement(item)));
-        }
-
-        if (savedDealsList.length > 0) {
-            const div = document.createElement('div');
-            div.className = 'section-divider';
-            div.textContent = '🏷️ OFFERTE PREFERITE';
-            fragment.appendChild(div);
-            savedDealsList.forEach(item => fragment.appendChild(createCardElement(item)));
-        }
-        grid.appendChild(fragment);
-        return;
+        list = savedItems;
+    } else {
+        list = currentTab === 'news' ? articles : deals;
     }
-
-    let list = currentTab === 'news' ? articles : deals;
 
     const filtered = list.filter(i => {
         const matchesSearch = i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q);
@@ -293,14 +329,30 @@ function render() {
         return matchesSearch && matchesFilter;
     });
 
+    totalPages = filtered.length;
+    
+    if (currentPageIndex >= totalPages) {
+        currentPageIndex = Math.max(0, totalPages - 1);
+    }
+
     if (filtered.length === 0) {
-        grid.innerHTML = `<div class="status-box">CARICAMENTO O NESSUN RISULTATO TROVATO.</div>`;
+        track.innerHTML = `
+            <div class="newspaper-page">
+                <div class="page-paper empty-state">
+                    <h2>NESSUN RISULTATO</h2>
+                    <p>Controlla i filtri o premi aggiorna in alto.</p>
+                </div>
+            </div>
+        `;
+        updatePagePosition();
         return;
     }
 
-    filtered.forEach(item => fragment.appendChild(createCardElement(item)));
-    grid.appendChild(fragment);
+    filtered.forEach((item, idx) => {
+        track.appendChild(createPageElement(item, idx, totalPages));
+    });
+
+    updatePagePosition();
 }
 
-// Avvio immediato al caricamento script
 loadData();
