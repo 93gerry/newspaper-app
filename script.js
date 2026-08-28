@@ -8,7 +8,7 @@ const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
 
 let articles = [];
 let deals = [];
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v10') || '[]');
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v11') || '[]');
 let currentTab = 'news';
 let currentPageIndex = 0;
 let totalPages = 0;
@@ -76,7 +76,7 @@ function parseXMLDoc(xmlString) {
             id: link || title,
             title: title,
             link: link,
-            desc: cleanDesc.length > 160 ? cleanDesc.slice(0, 160) + "..." : cleanDesc,
+            desc: cleanDesc.length > 180 ? cleanDesc.slice(0, 180) + "..." : cleanDesc,
             image: img,
             time: formatDateTime(pubDate)
         };
@@ -94,6 +94,17 @@ async function fetchFeed(url) {
     } catch(e) {}
 
     try {
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data?.contents) {
+                const parsed = parseXMLDoc(data.contents);
+                if (parsed.length > 0) return parsed;
+            }
+        }
+    } catch(e) {}
+
+    try {
         const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
         if (res.ok) {
             const data = await res.json();
@@ -102,7 +113,7 @@ async function fetchFeed(url) {
                     id: i.link || i.guid,
                     title: i.title,
                     link: i.link,
-                    desc: (i.description || '').replace(/<[^>]*>?/gm, '').slice(0, 160) + '...',
+                    desc: (i.description || '').replace(/<[^>]*>?/gm, '').slice(0, 180) + '...',
                     image: i.thumbnail || i.enclosure?.link || extractImageFromText(i.description),
                     time: formatDateTime(i.pubDate)
                 }));
@@ -128,13 +139,6 @@ async function loadData() {
     render();
 }
 
-async function manualRefresh() {
-    const btn = document.getElementById('refresh-btn');
-    if (btn) btn.classList.add('spinning');
-    await loadData();
-    if (btn) btn.classList.remove('spinning');
-}
-
 function toggleSave(e, id) {
     e.preventDefault();
     e.stopPropagation();
@@ -150,7 +154,7 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v10', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v11', JSON.stringify(savedItems));
     render();
 }
 
@@ -160,6 +164,12 @@ function switchTab(t) {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     const activeBtn = document.getElementById(`tab-${t}`);
     if (activeBtn) activeBtn.classList.add('active');
+
+    const filterBtn = document.getElementById('filter-btn');
+    if (filterBtn) {
+        // Mostra filtri solo su OFFERTE e PREFERITI
+        filterBtn.style.display = (t === 'deals' || t === 'saved') ? 'flex' : 'none';
+    }
     render();
 }
 
@@ -171,7 +181,7 @@ function debounceRender() {
     }, 150);
 }
 
-function createPageElement(item) {
+function createPageElement(item, index) {
     const isSaved = savedItems.some(s => s.id === item.id);
     const page = document.createElement('div');
     page.className = 'newspaper-page';
@@ -185,13 +195,13 @@ function createPageElement(item) {
     const timeHTML = item.time ? `<span class="page-time">🕒 ${item.time}</span>` : '';
 
     page.innerHTML = `
-        <div class="page-paper">
+        <div class="page-paper" data-link="${item.link}">
             <div class="page-header">
                 <div class="page-meta">
                     <span class="card-tag ${item.sourceClass || 'ig'}">${item.source}</span>
                     ${timeHTML}
                 </div>
-                <button class="star-btn ${isSaved ? 'active' : ''}" onclick="toggleSave(event, '${item.id.replace(/'/g, "\\'")}')">⭐</button>
+                <button class="star-btn ${isSaved ? 'active' : ''}" onclick="toggleSave(event, '${item.id.replace(/'/g, "\\'")}')" title="PREFERITO">⭐</button>
             </div>
             
             <h1 class="page-title">${item.title}</h1>
@@ -203,7 +213,7 @@ function createPageElement(item) {
             </div>
 
             <div class="page-footer">
-                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-btn">LEGGI ARTICOLO COMPLETO ➔</a>
+                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-btn">SWIPE IN ALTO ARTICOLO COMPLETO</a>
             </div>
         </div>
     `;
@@ -212,21 +222,50 @@ function createPageElement(item) {
 
 function updatePagePosition(animate = true) {
     const track = document.getElementById('newspaper-track');
-    const indicator = document.getElementById('page-indicator');
+    const pages = track ? track.querySelectorAll('.newspaper-page') : [];
     
-    if (track) {
-        track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
-        track.style.transform = `translateX(-${currentPageIndex * 100}vw)`;
-    }
-    
-    if (indicator) {
-        indicator.textContent = totalPages > 0 ? `PAGINA ${currentPageIndex + 1} DI ${totalPages}` : `PAGINA 0 DI 0`;
-    }
+    totalPages = pages.length;
+    if (currentPageIndex >= totalPages) currentPageIndex = Math.max(0, totalPages - 1);
+
+    pages.forEach((page, i) => {
+        const offset = i - currentPageIndex;
+        // Simulazione movimento circolare/3D sul piano orizzontale
+        const translateX = offset * 105;
+        const translateZ = -Math.abs(offset) * 120;
+        const rotateY = offset * -15;
+        const opacity = offset === 0 ? 1 : Math.max(0.2, 1 - Math.abs(offset) * 0.4);
+        const scale = offset === 0 ? 1 : 0.92;
+
+        page.style.transition = animate ? 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease' : 'none';
+        page.style.transform = `translateX(${translateX}vw) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+        page.style.opacity = opacity;
+        page.style.zIndex = totalPages - Math.abs(offset);
+    });
+
+    updateDots();
 
     const prevBtn = document.getElementById('arrow-prev');
     const nextBtn = document.getElementById('arrow-next');
     if (prevBtn) prevBtn.style.display = currentPageIndex > 0 ? 'flex' : 'none';
     if (nextBtn) nextBtn.style.display = currentPageIndex < totalPages - 1 ? 'flex' : 'none';
+}
+
+function updateDots() {
+    const dotsContainer = document.getElementById('page-dots');
+    if (!dotsContainer) return;
+    
+    let html = '';
+    const maxDots = Math.min(totalPages, 15);
+    for (let i = 0; i < maxDots; i++) {
+        const active = i === currentPageIndex ? 'active' : '';
+        html += `<span class="dot ${active}" onclick="goToPage(${i})"></span>`;
+    }
+    dotsContainer.innerHTML = html;
+}
+
+function goToPage(i) {
+    currentPageIndex = i;
+    updatePagePosition();
 }
 
 function prevPage() {
@@ -243,31 +282,50 @@ function nextPage() {
     }
 }
 
-// Gestione Touch Swipe Fluido con il dito su smartphone
+// Touch Gestures: Swipe orizzontale per scorrimento circolare, Swipe verticale in alto per articolo completo
 let touchStartX = 0;
+let touchStartY = 0;
 let touchCurrentX = 0;
+let touchCurrentY = 0;
 let isSwiping = false;
 
 const viewport = document.getElementById('viewport');
 
 viewport.addEventListener('touchstart', e => {
     touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
     isSwiping = true;
 }, { passive: true });
 
 viewport.addEventListener('touchmove', e => {
     if (!isSwiping) return;
     touchCurrentX = e.touches[0].clientX;
+    touchCurrentY = e.touches[0].clientY;
 }, { passive: true });
 
-viewport.addEventListener('touchend', () => {
+viewport.addEventListener('touchend', e => {
     if (!isSwiping) return;
     isSwiping = false;
-    const diff = touchStartX - touchCurrentX;
-    const threshold = 50;
+    
+    const diffX = touchStartX - touchCurrentX;
+    const diffY = touchStartY - touchCurrentY;
+    const threshold = 40;
 
-    if (Math.abs(diff) > threshold) {
-        if (diff > 0) {
+    // Se lo swipe verticale verso l'alto è prevalente
+    if (Math.abs(diffY) > Math.abs(diffX) && diffY > threshold) {
+        const activePage = document.querySelectorAll('.newspaper-page')[currentPageIndex];
+        if (activePage) {
+            const link = activePage.querySelector('.page-paper').getAttribute('data-link');
+            if (link && link !== '#') {
+                window.open(link, '_blank');
+            }
+        }
+        return;
+    }
+
+    // Altrimenti swipe orizzontale circolare
+    if (Math.abs(diffX) > threshold) {
+        if (diffX > 0) {
             nextPage();
         } else {
             prevPage();
@@ -275,10 +333,17 @@ viewport.addEventListener('touchend', () => {
     }
 }, { passive: true });
 
-// Gestione tastiera PC
+// Tasti tastiera PC
 document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') nextPage();
     if (e.key === 'ArrowLeft') prevPage();
+    if (e.key === 'ArrowUp') {
+        const activePage = document.querySelectorAll('.newspaper-page')[currentPageIndex];
+        if (activePage) {
+            const link = activePage.querySelector('.page-paper').getAttribute('data-link');
+            if (link && link !== '#') window.open(link, '_blank');
+        }
+    }
 });
 
 function render() {
@@ -286,11 +351,9 @@ function render() {
     if (!track) return;
 
     const searchInput = document.getElementById('search');
-    const newsSourceSelect = document.getElementById('news-source-filter');
     const platformSelect = document.getElementById('platform-filter');
 
     const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
-    const newsSource = newsSourceSelect ? newsSourceSelect.value : 'ALL';
     const platformFilter = platformSelect ? platformSelect.value : 'ALL';
 
     track.innerHTML = "";
@@ -306,9 +369,7 @@ function render() {
         const matchesSearch = i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q);
         let matchesFilter = true;
 
-        if (currentTab === 'news' && newsSource !== 'ALL') {
-            matchesFilter = i.source === newsSource;
-        } else if (currentTab === 'deals' && platformFilter !== 'ALL') {
+        if ((currentTab === 'deals' || currentTab === 'saved') && platformFilter !== 'ALL') {
             matchesFilter = i.title.toUpperCase().includes(platformFilter) || i.desc.toUpperCase().includes(platformFilter);
         }
 
@@ -316,29 +377,31 @@ function render() {
     });
 
     totalPages = filtered.length;
-    
-    if (currentPageIndex >= totalPages) {
-        currentPageIndex = Math.max(0, totalPages - 1);
-    }
+    if (currentPageIndex >= totalPages) currentPageIndex = Math.max(0, totalPages - 1);
 
     if (filtered.length === 0) {
         track.innerHTML = `
             <div class="newspaper-page">
                 <div class="page-paper empty-state">
-                    <h1 class="page-title">NESSUN RISULTATO</h1>
-                    <p class="page-desc">CAMBIA I FILTRI O VERIFICA LA CONNESSIONE.</p>
+                    <h1 class="page-title">NESSUN CONTENUTO</h1>
+                    <p class="page-desc">VERIFICA I FILTRI IMPOSTATI O LA CONNESSIONE.</p>
                 </div>
             </div>
         `;
-        updatePagePosition();
+        updatePagePosition(false);
         return;
     }
 
-    filtered.forEach(item => {
-        track.appendChild(createPageElement(item));
+    filtered.forEach((item, index) => {
+        track.appendChild(createPageElement(item, index));
     });
 
     updatePagePosition(false);
 }
+
+// Aggiornamento automatico ogni 1 minuto
+setInterval(() => {
+    loadData();
+}, 60000);
 
 loadData();
