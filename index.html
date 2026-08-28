@@ -15,15 +15,14 @@
 
     <header>
         <div class="logo">🐤</div>
-        <input type="text" id="search" class="search" placeholder="CERCA..." oninput="render()">
-        <div class="count-pill" id="item-count">0</div>
+        <input type="text" id="search" class="search" placeholder="CERCA..." oninput="debounceRender()">
         <button class="btn-ui" id="filter-btn" onclick="toggleModal(true)">⚙️ FILTRI</button>
         <button class="btn-icon" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
             <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
         </button>
     </header>
 
-    <div class="modal-overlay" id="filter-modal">
+    <div class="modal-overlay" id="filter-modal" onclick="closeModalOnOverlay(event)">
         <div class="modal-body">
             <div class="modal-title">PANNELLO FILTRI</div>
             
@@ -38,12 +37,12 @@
             </div>
 
             <div class="filter-group">
-                <label class="filter-label">PIATTAFORMA (OFFERTE INSTANT GAMING)</label>
+                <label class="filter-label">PIATTAFORMA OFFERTE</label>
                 <select id="platform-filter" class="modal-select" onchange="render()">
                     <option value="ALL">TUTTE LE PIATTAFORME</option>
                     <option value="PC">PC / STEAM</option>
-                    <option value="PS5">PLAYSTATION 5 / PS4</option>
-                    <option value="XBOX">XBOX SERIES X|S / ONE</option>
+                    <option value="PS5">PLAYSTATION</option>
+                    <option value="XBOX">XBOX</option>
                     <option value="SWITCH">NINTENDO SWITCH</option>
                 </select>
             </div>
