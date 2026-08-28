@@ -1,3 +1,8 @@
+Ecco il file **HTML e CSS totalmente integrati**. Ho riorganizzato e strutturato il codice CSS separando la parte di layout, componenti e modali in blocchi dedicati per renderlo scalabile e facile da gestire.
+
+L'architettura JavaScript è stata ottimizzata per gestire gli errori in background (senza bloccare la UI) e per consentire l'aggiornamento automatico ogni minuto.
+
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -9,26 +14,31 @@
     <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#030712">
     
-    <title>NewsPaper 🐤 v15.0 - News & Deals</title>
-    <link id="apple-icon" rel="apple-touch-icon" href="">
+    <title>NewsPaper 🐤 - News & Deals</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        /* 1. VARIABLES & SYSTEM RESET */
         :root {
             --bg-base: #030712;
             --surface-glass: rgba(15, 23, 42, 0.85);
             --surface-card: rgba(15, 23, 42, 0.6);
             --border-glass: rgba(255, 255, 255, 0.08);
-            --primary: #ccff00; /* Giallo acido */
+            --primary: #ccff00;
             --primary-glow: rgba(204, 255, 0, 0.15);
-            --brand-purple: #7c3aed;
-            --brand-orange: #ff5400; /* Colore Instant Gaming */
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --nav-height: 46px;
+            --nav-height: 50px;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            text-transform: uppercase; 
         }
 
         html, body {
@@ -36,16 +46,15 @@
             overflow: hidden;
             background-color: var(--bg-base);
             color: var(--text-main);
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
             -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
             user-select: none;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; text-transform: uppercase; }
-
         input, .card-snippet { text-transform: none !important; }
 
+        /* 2. MAIN LAYOUT CONTAINER */
         .app-layout {
             display: flex;
             flex-direction: column;
@@ -55,7 +64,7 @@
             position: relative;
         }
 
-        /* HEADER SUPER COMPATTO */
+        /* 3. HEADER & NAVIGATION TOP */
         .top-bar { 
             flex-shrink: 0;
             z-index: 800; 
@@ -63,33 +72,30 @@
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-glass); 
-            padding: 6px 10px;
-            padding-top: calc(env(safe-area-inset-top, 14px) + 3px);
+            padding: 8px 12px;
+            padding-top: calc(env(safe-area-inset-top, 10px) + 6px);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .brand-logo { 
             background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
-            width: 32px; height: 32px; 
+            width: 34px; height: 34px; 
             border-radius: 9px; 
             display: grid; place-items: center; 
-            font-size: 1rem; 
+            font-size: 1.1rem; 
             flex-shrink: 0;
-            box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4); 
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
         }
 
-        .search-box {
-            position: relative;
-            flex-grow: 1;
-        }
+        .search-box { position: relative; flex-grow: 1; }
 
         .search-input {
             width: 100%;
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-glass);
-            padding: 6px 10px 6px 32px;
+            padding: 7px 10px 7px 32px;
             border-radius: 9px;
             color: var(--text-main);
             font-size: 0.8rem;
@@ -103,44 +109,312 @@
             background: var(--surface-glass);
             border: 1px solid var(--border-glass);
             color: var(--text-main);
-            width: 32px; height: 32px;
+            width: 34px; height: 34px;
             border-radius: 9px;
             display: grid; place-items: center;
             cursor: pointer;
             flex-shrink: 0;
             transition: transform 0.15s;
         }
-        .action-icon-btn:active { transform: scale(0.9); }
-        .action-icon-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .action-icon-btn:active { transform: scale(0.92); }
+        .action-icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; }
         .action-icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .filter-badge-btn {
-            background: var(--primary-glow);
-            border: 1px solid rgba(204, 255, 0, 0.4);
-            color: var(--primary);
-            padding: 0 9px;
-            height: 32px;
-            border-radius: 9px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            cursor: pointer;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex-shrink: 0;
-        }
-        .filter-badge-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-
-        /* CONTENUTO SCORRIBILE */
+        /* 4. CONTENT GRID & CARDS */
         .scrollable-content {
             flex-grow: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 10px;
-            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 12px) + 16px);
+            padding: 12px;
+            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 12px) + 20px);
         }
 
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap
+        .news-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 12px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+
+        .card { 
+            background: var(--surface-card); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass); 
+            border-radius: 14px; 
+            overflow: hidden; 
+            display: flex; flex-direction: column; 
+            color: inherit; text-decoration: none; 
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card:active { transform: scale(0.98); }
+
+        .card-cover { width: 100%; height: 140px; position: relative; background: #0b0f19; overflow: hidden; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .card-badges { 
+            position: absolute; top: 8px; left: 8px; right: 8px; 
+            display: flex; justify-content: space-between; align-items: center; z-index: 2; 
+        }
+        .source-tag { 
+            background: rgba(3, 7, 18, 0.85); 
+            backdrop-filter: blur(6px);
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-size: 0.62rem; 
+            font-weight: 800; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+
+        .card-body { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; color: var(--text-main); }
+        .card-snippet { font-size: 0.75rem; color: var(--text-sub); line-height: 1.35; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .card-footer { 
+            font-size: 0.65rem; color: var(--text-sub); 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-top: 1px solid var(--border-glass); 
+            padding-top: 8px; margin-top: auto; 
+        }
+
+        /* 5. NAVIGATION BAR BOTTOM */
+        .bottom-nav-wrapper {
+            position: fixed;
+            bottom: calc(env(safe-area-inset-bottom, 10px) + 6px); 
+            left: 0; width: 100%;
+            display: flex; justify-content: center;
+            z-index: 800;
+            pointer-events: none;
+            padding: 0 16px;
+        }
+
+        .bottom-nav { 
+            pointer-events: auto;
+            width: 100%; max-width: 340px;
+            height: var(--nav-height); 
+            background: rgba(15, 23, 42, 0.94); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            border-radius: 16px; 
+            display: flex; justify-content: space-around; align-items: center; 
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            padding: 0 4px;
+        }
+
+        .nav-tab-btn { 
+            display: flex; align-items: center; gap: 6px; 
+            color: var(--text-sub); background: none; border: none; 
+            font-size: 0.7rem; font-weight: 800; cursor: pointer; 
+            height: 38px; padding: 0 12px; border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .nav-tab-btn.active { color: var(--primary); background: var(--primary-glow); }
+
+        /* 6. UTILITY / STATUS BOX */
+        .status-box { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-sub); }
+        .spinner { width: 30px; height: 30px; border: 3px solid var(--border-glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+    </style>
+</head>
+<body>
+
+    <div class="app-layout">
+        <header class="top-bar">
+            <div class="brand-logo">🐤</div>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" class="search-input" placeholder="CERCA..." oninput="renderArticles()">
+            </div>
+            <button class="action-icon-btn" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
+                <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
+            </button>
+        </header>
+
+        <main class="scrollable-content">
+            <div class="news-grid" id="news-grid">
+                <div class="status-box">
+                    <div class="spinner"></div>
+                    <p>CARICAMENTO IN CORSO...</p>
+                </div>
+            </div>
+        </main>
+
+        <div class="bottom-nav-wrapper">
+            <nav class="bottom-nav">
+                <button class="nav-tab-btn active" id="nav-home" onclick="switchTab('home')">
+                    <span>📰</span><span>FEED</span>
+                </button>
+                <button class="nav-tab-btn" id="nav-deals" onclick="switchTab('deals')">
+                    <span>🏷️</span><span>OFFERTE</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+        const FEEDS = [
+            { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#ef4444" },
+            { name: "Multiplayer.it", url: "https://multiplayer.it/feed/rss/news/", color: "#f97316" },
+            { name: "Everyeye.it", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#3b82f6" }
+        ];
+
+        let allArticles = [];
+        let allDeals = [];
+        let currentTab = 'home';
+
+        function cleanText(text) {
+            if (!text) return "";
+            return text.replace(/<[^>]*>?/gm, '').trim();
+        }
+
+        async function fetchWithProxy(url) {
+            const proxyList = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`
+            ];
+
+            for (let proxy of proxyList) {
+                try {
+                    const res = await fetch(proxy);
+                    if (res.ok) {
+                        const data = await res.text();
+                        if (data && data.length > 50) return data;
+                    }
+                } catch (e) {}
+            }
+            return null;
+        }
+
+        function parseRSS(xmlText, sourceName, sourceColor) {
+            try {
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(xmlText, "text/xml");
+                const items = Array.from(xml.querySelectorAll("item"));
+
+                return items.map(item => {
+                    const title = item.querySelector("title")?.textContent || "";
+                    const link = item.querySelector("link")?.textContent || "";
+                    const desc = item.querySelector("description")?.textContent || "";
+                    
+                    let img = "";
+                    const media = item.getElementsByTagName("media:content")[0];
+                    if (media) {
+                        img = media.getAttribute("url");
+                    } else {
+                        const matchImg = desc.match(/src=["'](.*?)["']/);
+                        if (matchImg) img = matchImg[1];
+                    }
+
+                    return {
+                        title: cleanText(title),
+                        link: link.trim(),
+                        snippet: cleanText(desc).slice(0, 95) + "...",
+                        image: img,
+                        source: sourceName,
+                        sourceColor: sourceColor
+                    };
+                }).filter(i => i.title && i.link);
+            } catch (e) {
+                return [];
+            }
+        }
+
+        async function loadAllData() {
+            try {
+                let newsAcc = [];
+                for (let feed of FEEDS) {
+                    const rawXml = await fetchWithProxy(feed.url);
+                    if (rawXml) {
+                        const parsed = parseRSS(rawXml, feed.name, feed.color);
+                        newsAcc = newsAcc.concat(parsed);
+                    }
+                }
+                if (newsAcc.length > 0) allArticles = newsAcc;
+
+                const rawDeals = await fetchWithProxy("https://www.instant-gaming.com/it/feed/rss/");
+                if (rawDeals) {
+                    allDeals = parseRSS(rawDeals, "Instant Gaming", "#ff5400");
+                }
+            } catch (e) {
+                console.error("Errore fetch:", e);
+            }
+
+            renderArticles();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`nav-${tab}`).classList.add('active');
+            renderArticles();
+        }
+
+        function manualRefresh() {
+            const btn = document.getElementById('refresh-btn');
+            btn.classList.add('spinning');
+            loadAllData().then(() => btn.classList.remove('spinning'));
+        }
+
+        function renderArticles() {
+            const grid = document.getElementById("news-grid");
+            const searchQuery = document.getElementById("search-input").value.toLowerCase();
+            const list = currentTab === 'home' ? allArticles : allDeals;
+
+            const filtered = list.filter(item => 
+                item.title.toLowerCase().includes(searchQuery) || 
+                item.snippet.toLowerCase().includes(searchQuery)
+            );
+
+            grid.innerHTML = "";
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="status-box">
+                        <p>NESSUN RISULTATO DISPONIBILE.</p>
+                        <button onclick="manualRefresh()" style="margin-top:12px; padding:8px 16px; background:var(--primary); border:none; border-radius:8px; font-weight:800; color:#030712; cursor:pointer;">AGGIORNA</button>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement("a");
+                card.className = "card";
+                card.href = item.link;
+                card.target = "_blank";
+                card.rel = "noopener";
+
+                const imageBlock = item.image ? `
+                    <div class="card-cover">
+                        <img class="card-img" src="${item.image}" alt="" loading="lazy">
+                        <div class="card-badges">
+                            <span class="source-tag" style="color:${item.sourceColor}">${item.source}</span>
+                        </div>
+                    </div>` : `
+                    <div style="padding: 10px 12px 0 12px;">
+                        <span class="source-tag" style="color:${item.sourceColor}">${item.source}</span>
+                    </div>`;
+
+                card.innerHTML = `
+                    ${imageBlock}
+                    <div class="card-body">
+                        <h2 class="card-title">${item.title}</h2>
+                        <p class="card-snippet">${item.snippet}</p>
+                        <div class="card-footer">
+                            <span>🔗 VEDI DETTAGLI</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        loadAllData();
+        setInterval(loadAllData, 60000);
+    </script>
+</body>
+</html>
+
+```
