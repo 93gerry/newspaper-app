@@ -14,6 +14,7 @@
         :root {
             --bg-base: #030712;
             --surface: #0f172a;
+            --surface-card: #1e293b;
             --border: rgba(255, 255, 255, 0.1);
             --primary: #ccff00;
             --text-main: #f8fafc;
@@ -52,14 +53,8 @@
             flex-shrink: 0;
         }
         
-        .search-container {
-            flex-grow: 1;
-            display: flex;
-            gap: 6px;
-        }
-
         .search { 
-            width: 100%;
+            flex-grow: 1;
             background: var(--surface); 
             border: 1px solid var(--border); 
             padding: 8px 12px; 
@@ -69,18 +64,23 @@
             font-size: 0.8rem;
         }
 
-        .filter-select {
+        .btn-ui {
             background: var(--surface);
             border: 1px solid var(--border);
-            color: var(--text-sub);
-            padding: 0 8px;
+            color: var(--text-main);
+            padding: 0 12px;
+            height: 36px;
             border-radius: 8px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            outline: none;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
         }
-        
+        .btn-ui.active { border-color: var(--primary); color: var(--primary); }
+
         .btn-icon { 
             background: var(--surface); 
             border: 1px solid var(--border); 
@@ -96,6 +96,27 @@
         .btn-icon.spinning svg { animation: spin 0.8s linear infinite; }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* MODAL FILTRI */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            z-index: 300; display: none; align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-body {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; width: 100%; max-width: 400px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .modal-title { font-size: 0.9rem; font-weight: 800; color: var(--primary); }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-label { font-size: 0.7rem; color: var(--text-sub); font-weight: 800; }
+        .modal-select {
+            background: var(--bg-base); border: 1px solid var(--border);
+            color: #fff; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 0.8rem;
+        }
 
         main { 
             flex-grow: 1; 
@@ -138,7 +159,7 @@
         .card-cover {
             width: 100%;
             height: 140px;
-            background: #1e293b;
+            background: var(--surface-card);
             overflow: hidden;
             position: relative;
         }
@@ -170,13 +191,8 @@
         }
         
         .star-btn {
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 2px;
-            opacity: 0.3;
-            transition: opacity 0.2s;
+            background: none; border: none; font-size: 1.1rem;
+            cursor: pointer; padding: 2px; opacity: 0.3; transition: opacity 0.2s;
         }
         .star-btn.active { opacity: 1; }
 
@@ -244,19 +260,41 @@
 
     <header>
         <div class="logo">🐤</div>
-        <div class="search-container">
-            <input type="text" id="search" class="search" placeholder="CERCA..." oninput="render()">
-            <select id="source-filter" class="filter-select" onchange="render()">
-                <option value="ALL">TUTTI I FILTRI</option>
-                <option value="IGN Italia">IGN ITALIA</option>
-                <option value="Multiplayer">MULTIPLAYER</option>
-                <option value="Instant Gaming">INSTANT GAMING</option>
-            </select>
-        </div>
+        <input type="text" id="search" class="search" placeholder="CERCA..." oninput="render()">
+        <button class="btn-ui" id="filter-btn" onclick="toggleModal(true)">⚙️ FILTRI</button>
         <button class="btn-icon" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
             <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
         </button>
     </header>
+
+    <div class="modal-overlay" id="filter-modal">
+        <div class="modal-body">
+            <div class="modal-title">PANNELLO FILTRI</div>
+            
+            <div class="filter-group">
+                <label class="filter-label">FONTE NEWS</label>
+                <select id="news-source-filter" class="modal-select" onchange="render()">
+                    <option value="ALL">TUTTE LE FONTI</option>
+                    <option value="IGN Italia">IGN ITALIA</option>
+                    <option value="Multiplayer">MULTIPLAYER</option>
+                    <option value="Everyeye">EVERYEYE</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">PIATTAFORMA (OFFERTE INSTANT GAMING)</label>
+                <select id="platform-filter" class="modal-select" onchange="render()">
+                    <option value="ALL">TUTTE LE PIATTAFORME</option>
+                    <option value="PC">PC / STEAM</option>
+                    <option value="PS5">PLAYSTATION 5 / PS4</option>
+                    <option value="XBOX">XBOX SERIES X|S / ONE</option>
+                    <option value="SWITCH">NINTENDO SWITCH</option>
+                </select>
+            </div>
+
+            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#000; margin-top:8px;" onclick="toggleModal(false)">APPLICA FILTRI</button>
+        </div>
+    </div>
 
     <main>
         <div class="grid" id="grid">
@@ -273,39 +311,18 @@
     <script>
         const FEEDS = [
             { name: "IGN Italia", url: "https://it.ign.com/feed.xml" },
-            { name: "Multiplayer", url: "https://multiplayer.it/feed/rss/news/" }
+            { name: "Multiplayer", url: "https://multiplayer.it/feed/rss/news/" },
+            { name: "Everyeye", url: "https://www.everyeye.it/feed/feed_news_rss.asp" }
         ];
 
         let articles = [];
         let deals = [];
-        let savedItems = JSON.parse(localStorage.getItem('np_unified_saved_v2') || '[]');
+        let savedItems = JSON.parse(localStorage.getItem('np_unified_saved_v3') || '[]');
         let currentTab = 'news';
 
-        async function fetchProxy(url) {
-            const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`
-            ];
-            for (let p of proxies) {
-                try {
-                    let r = await fetch(p);
-                    if (r.ok) {
-                        let text = await r.text();
-                        if (text && text.length > 100) return text;
-                    }
-                } catch(e) {}
-            }
-            return null;
+        function toggleModal(open) {
+            document.getElementById('filter-modal').classList.toggle('open', open);
         }
 
-        function extractImage(item, desc) {
-            let mediaContent = item.getElementsByTagName("media:content")[0];
-            if (mediaContent && mediaContent.getAttribute("url")) {
-                return mediaContent.getAttribute("url");
-            }
-            let enclosure = item.querySelector("enclosure");
-            if (enclosure && enclosure.getAttribute("url")) {
-                return enclosure.getAttribute("url");
-            }
-            let imgMatch = desc.match(/src=["'](.*?)["']/i);
-            if (imgMatch && imgMatch[1]) {
+        async function fetchProxy(url) {
+            const proxies =
