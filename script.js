@@ -8,19 +8,26 @@ const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
 
 let articles = [];
 let deals = [];
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v11') || '[]');
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v12') || '[]');
 let currentTab = 'news';
 let currentPageIndex = 0;
 let totalPages = 0;
 let debounceTimer;
 
-function toggleModal(open) {
+function toggleSearchModal(open) {
+    const modal = document.getElementById('search-modal');
+    if (modal) modal.classList.toggle('open', open);
+}
+
+function toggleFilterModal(open) {
     const modal = document.getElementById('filter-modal');
     if (modal) modal.classList.toggle('open', open);
 }
 
-function closeModalOnOverlay(e) {
-    if (e.target.id === 'filter-modal') toggleModal(false);
+function closeModalOnOverlay(e, modalId) {
+    if (e.target.id === modalId) {
+        document.getElementById(modalId).classList.remove('open');
+    }
 }
 
 function formatDateTime(dateStr) {
@@ -76,7 +83,7 @@ function parseXMLDoc(xmlString) {
             id: link || title,
             title: title,
             link: link,
-            desc: cleanDesc.length > 180 ? cleanDesc.slice(0, 180) + "..." : cleanDesc,
+            desc: cleanDesc.length > 200 ? cleanDesc.slice(0, 200) + "..." : cleanDesc,
             image: img,
             time: formatDateTime(pubDate)
         };
@@ -100,23 +107,6 @@ async function fetchFeed(url) {
             if (data?.contents) {
                 const parsed = parseXMLDoc(data.contents);
                 if (parsed.length > 0) return parsed;
-            }
-        }
-    } catch(e) {}
-
-    try {
-        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data?.items) {
-                return data.items.map(i => ({
-                    id: i.link || i.guid,
-                    title: i.title,
-                    link: i.link,
-                    desc: (i.description || '').replace(/<[^>]*>?/gm, '').slice(0, 180) + '...',
-                    image: i.thumbnail || i.enclosure?.link || extractImageFromText(i.description),
-                    time: formatDateTime(i.pubDate)
-                }));
             }
         }
     } catch(e) {}
@@ -154,7 +144,7 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v11', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v12', JSON.stringify(savedItems));
     render();
 }
 
@@ -165,10 +155,9 @@ function switchTab(t) {
     const activeBtn = document.getElementById(`tab-${t}`);
     if (activeBtn) activeBtn.classList.add('active');
 
-    const filterBtn = document.getElementById('filter-btn');
-    if (filterBtn) {
-        // Mostra filtri solo su OFFERTE e PREFERITI
-        filterBtn.style.display = (t === 'deals' || t === 'saved') ? 'flex' : 'none';
+    const floatFilterBtn = document.getElementById('float-filter-btn');
+    if (floatFilterBtn) {
+        floatFilterBtn.style.display = (t === 'deals' || t === 'saved') ? 'flex' : 'none';
     }
     render();
 }
@@ -181,7 +170,7 @@ function debounceRender() {
     }, 150);
 }
 
-function createPageElement(item, index) {
+function createPageElement(item) {
     const isSaved = savedItems.some(s => s.id === item.id);
     const page = document.createElement('div');
     page.className = 'newspaper-page';
@@ -229,12 +218,11 @@ function updatePagePosition(animate = true) {
 
     pages.forEach((page, i) => {
         const offset = i - currentPageIndex;
-        // Simulazione movimento circolare/3D sul piano orizzontale
         const translateX = offset * 105;
-        const translateZ = -Math.abs(offset) * 120;
-        const rotateY = offset * -15;
+        const translateZ = -Math.abs(offset) * 140;
+        const rotateY = offset * -20;
         const opacity = offset === 0 ? 1 : Math.max(0.2, 1 - Math.abs(offset) * 0.4);
-        const scale = offset === 0 ? 1 : 0.92;
+        const scale = offset === 0 ? 1 : 0.90;
 
         page.style.transition = animate ? 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease' : 'none';
         page.style.transform = `translateX(${translateX}vw) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
@@ -282,7 +270,6 @@ function nextPage() {
     }
 }
 
-// Touch Gestures: Swipe orizzontale per scorrimento circolare, Swipe verticale in alto per articolo completo
 let touchStartX = 0;
 let touchStartY = 0;
 let touchCurrentX = 0;
@@ -303,7 +290,7 @@ viewport.addEventListener('touchmove', e => {
     touchCurrentY = e.touches[0].clientY;
 }, { passive: true });
 
-viewport.addEventListener('touchend', e => {
+viewport.addEventListener('touchend', () => {
     if (!isSwiping) return;
     isSwiping = false;
     
@@ -311,7 +298,6 @@ viewport.addEventListener('touchend', e => {
     const diffY = touchStartY - touchCurrentY;
     const threshold = 40;
 
-    // Se lo swipe verticale verso l'alto è prevalente
     if (Math.abs(diffY) > Math.abs(diffX) && diffY > threshold) {
         const activePage = document.querySelectorAll('.newspaper-page')[currentPageIndex];
         if (activePage) {
@@ -323,7 +309,6 @@ viewport.addEventListener('touchend', e => {
         return;
     }
 
-    // Altrimenti swipe orizzontale circolare
     if (Math.abs(diffX) > threshold) {
         if (diffX > 0) {
             nextPage();
@@ -333,7 +318,6 @@ viewport.addEventListener('touchend', e => {
     }
 }, { passive: true });
 
-// Tasti tastiera PC
 document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') nextPage();
     if (e.key === 'ArrowLeft') prevPage();
@@ -392,14 +376,13 @@ function render() {
         return;
     }
 
-    filtered.forEach((item, index) => {
-        track.appendChild(createPageElement(item, index));
+    filtered.forEach(item => {
+        track.appendChild(createPageElement(item));
     });
 
     updatePagePosition(false);
 }
 
-// Aggiornamento automatico ogni 1 minuto
 setInterval(() => {
     loadData();
 }, 60000);
