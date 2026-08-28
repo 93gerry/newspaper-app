@@ -3,37 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0a0f1d">
     <title>NewsPaper 🐤</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
         <div class="logo">🐤</div>
-        <input type="text" id="search" class="search" placeholder="CERCA NEL GIORNALE..." oninput="debounceRender()">
-        <button class="btn-ui" id="filter-btn" style="display:none;" onclick="toggleModal(true)">⚙️ FILTRI</button>
     </header>
 
-    <div class="modal-overlay" id="filter-modal" onclick="closeModalOnOverlay(event)">
+    <div class="modal-overlay" id="search-modal" onclick="closeModalOnOverlay(event, 'search-modal')">
         <div class="modal-body">
-            <div class="modal-title" id="modal-title-text">FILTRI OFFERTE</div>
-            
-            <div class="filter-group" id="group-news-source" style="display:none;">
-                <label class="filter-label">FONTE NEWS</label>
-                <select id="news-source-filter" class="modal-select" onchange="render()">
-                    <option value="ALL">TUTTE LE FONTI</option>
-                    <option value="IGN Italia">IGN ITALIA</option>
-                    <option value="Multiplayer">MULTIPLAYER</option>
-                    <option value="Everyeye">EVERYEYE</option>
-                </select>
+            <div class="modal-title">CERCA NEL GIORNALE</div>
+            <div class="filter-group">
+                <input type="text" id="search" class="modal-select" placeholder="SCRIVI E CERCA..." oninput="debounceRender()">
             </div>
+            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleSearchModal(false)">CHIUDI</button>
+        </div>
+    </div>
 
-            <div class="filter-group" id="group-platform">
+    <div class="modal-overlay" id="filter-modal" onclick="closeModalOnOverlay(event, 'filter-modal')">
+        <div class="modal-body">
+            <div class="modal-title">FILTRI</div>
+            <div class="filter-group">
                 <label class="filter-label">PIATTAFORMA</label>
                 <select id="platform-filter" class="modal-select" onchange="render()">
                     <option value="ALL">TUTTE LE PIATTAFORME</option>
@@ -43,12 +40,10 @@
                     <option value="NINTENDO">NINTENDO SWITCH</option>
                 </select>
             </div>
-
-            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleModal(false)">APPLICA</button>
+            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleFilterModal(false)">APPLICA</button>
         </div>
     </div>
 
-    <!-- Pulsanti laterali PC -->
     <button class="arrow-nav prev" id="arrow-prev" onclick="prevPage()">❮</button>
     <button class="arrow-nav next" id="arrow-next" onclick="nextPage()">❯</button>
 
@@ -63,8 +58,10 @@
         </div>
     </main>
 
-    <!-- Indicatore a pallini -->
     <div class="page-dots" id="page-dots"></div>
+
+    <button class="floating-action-btn filter-float-btn" id="float-filter-btn" onclick="toggleFilterModal(true)" title="FILTRI" style="display:none;">⚙️</button>
+    <button class="floating-action-btn search-float-btn" onclick="toggleSearchModal(true)" title="CERCA">🔍</button>
 
     <nav>
         <button class="nav-btn active" id="tab-news" onclick="switchTab('news')" title="NEWS">📰</button>
