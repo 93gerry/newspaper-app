@@ -6,9 +6,19 @@ const FEEDS = [
 
 const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
 
+// Proxy CORS a cascata per garantire massima affidabilità
+const PROXIES = [
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+];
+
 let articles = [];
 let deals = [];
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v14') || '[]');
+let pendingArticles = null;
+let pendingDeals = null;
+
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v17') || '[]');
 let currentTab = 'news';
 let currentPageIndex = 0;
 let totalPages = 0;
@@ -58,9 +68,9 @@ function parseXMLDoc(xmlString) {
     
     return Array.from(items).map(i => {
         const title = (i.querySelector("title")?.textContent || "").replace(/<[^>]*>?/gm, '').trim();
-        const link = (i.querySelector("link")?.textContent || "#").trim();
+        const link = (i.querySelector("link")?.textContent || i.querySelector("guid")?.textContent || "#").trim();
         const pubDate = i.querySelector("pubDate")?.textContent || "";
-        const descRaw = i.querySelector("description")?.textContent || "";
+        const descRaw = i.querySelector("description")?.textContent || i.getElementsByTagName("content:encoded")[0]?.textContent || "";
         
         let img = null;
         const mediaContent = i.getElementsByTagName("media:content")[0];
@@ -87,45 +97,80 @@ function parseXMLDoc(xmlString) {
             image: img,
             time: formatDateTime(pubDate)
         };
-    });
+    }).filter(i => i.title);
 }
 
 async function fetchFeed(url) {
-    try {
-        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-        if (res.ok) {
-            const text = await res.text();
-            const parsed = parseXMLDoc(text);
-            if (parsed.length > 0) return parsed;
-        }
-    } catch(e) {}
+    for (const proxyFn of PROXIES) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 secondi timeout
+            const res = await fetch(proxyFn(url), { signal: controller.signal });
+            clearTimeout(timeoutId);
 
-    try {
-        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data?.contents) {
-                const parsed = parseXMLDoc(data.contents);
-                if (parsed.length > 0) return parsed;
+            if (res.ok) {
+                const text = await res.text();
+                if (text && text.includes('<item>')) {
+                    const parsed = parseXMLDoc(text);
+                    if (parsed.length > 0) return parsed;
+                }
             }
+        } catch (e) {
+            // Se fallisce passa al prossimo proxy
         }
-    } catch(e) {}
-
+    }
     return [];
 }
 
-async function loadData() {
-    articles = [];
-    deals = [];
+async function loadData(isBackgroundRefresh = false) {
+    try {
+        const newsPromises = FEEDS.map(async f => {
+            const items = await fetchFeed(f.url);
+            return items.map(i => ({ ...i, source: f.name, sourceClass: f.class, type: 'news' }));
+        });
 
-    for (const f of FEEDS) {
-        const items = await fetchFeed(f.url);
-        articles.push(...items.map(i => ({ ...i, source: f.name, sourceClass: f.class, type: 'news' })));
+        const dealsPromise = fetchFeed(DEALS_FEED).then(items => 
+            items.map(i => ({ ...i, source: "Instant Gaming", sourceClass: "ig", type: 'deal' }))
+        );
+
+        const results = await Promise.all([...newsPromises, dealsPromise]);
+        
+        const fetchedNews = [];
+        results.slice(0, FEEDS.length).forEach(arr => fetchedNews.push(...arr));
+        const fetchedDeals = results[FEEDS.length] || [];
+
+        if (!isBackgroundRefresh || articles.length === 0) {
+            articles = fetchedNews;
+            deals = fetchedDeals;
+            render();
+        } else {
+            // Verifica se ci sono nuove notizie
+            const hasNewArticles = fetchedNews.length > 0 && fetchedNews[0].id !== articles[0]?.id;
+            const hasNewDeals = fetchedDeals.length > 0 && fetchedDeals[0].id !== deals[0]?.id;
+
+            if (hasNewArticles || hasNewDeals) {
+                pendingArticles = fetchedNews;
+                pendingDeals = fetchedDeals;
+                showToastUpdate(true);
+            }
+        }
+    } catch (e) {
+        console.error("Errore nel caricamento dati:", e);
     }
+}
 
-    const dealItems = await fetchFeed(DEALS_FEED);
-    deals.push(...dealItems.map(i => ({ ...i, source: "Instant Gaming", sourceClass: "ig", type: 'deal' })));
+function showToastUpdate(show) {
+    const toast = document.getElementById('toast-update');
+    if (toast) toast.style.display = show ? 'block' : 'none';
+}
 
+function applyPendingUpdates() {
+    if (pendingArticles) articles = pendingArticles;
+    if (pendingDeals) deals = pendingDeals;
+    pendingArticles = null;
+    pendingDeals = null;
+    showToastUpdate(false);
+    currentPageIndex = 0;
     render();
 }
 
@@ -144,7 +189,7 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v14', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v17', JSON.stringify(savedItems));
     render();
 }
 
@@ -177,7 +222,7 @@ function createPageElement(item) {
 
     const imageHTML = item.image ? `
         <div class="page-cover">
-            <img class="page-img" src="${item.image}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'">
+            <img class="page-img" src="${item.image}" alt="${item.title}" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'">
         </div>
     ` : '';
 
@@ -190,7 +235,10 @@ function createPageElement(item) {
                     <span class="card-tag ${item.sourceClass || 'ig'}">${item.source}</span>
                     ${timeHTML}
                 </div>
-                <button class="star-btn ${isSaved ? 'active' : ''}" onclick="toggleSave(event, '${item.id.replace(/'/g, "\\'")}')" title="PREFERITO">⭐</button>
+                <button class="star-btn ${isSaved ? 'active' : ''}" 
+                        aria-label="${isSaved ? 'Rimuovi dai preferiti' : 'Salva nei preferiti'}"
+                        onclick="toggleSave(event, '${item.id.replace(/'/g, "\\'")}')" 
+                        title="PREFERITO">⭐</button>
             </div>
             
             <h1 class="page-title">${item.title}</h1>
@@ -202,7 +250,7 @@ function createPageElement(item) {
             </div>
 
             <div class="page-footer">
-                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-btn">SWIPE IN ALTO ARTICOLO COMPLETO</a>
+                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-btn" aria-label="Leggi articolo completo su ${item.source}">SWIPE IN ALTO ARTICOLO COMPLETO</a>
             </div>
         </div>
     `;
@@ -246,7 +294,7 @@ function updateDots() {
     const maxDots = Math.min(totalPages, 15);
     for (let i = 0; i < maxDots; i++) {
         const active = i === currentPageIndex ? 'active' : '';
-        html += `<span class="dot ${active}" onclick="goToPage(${i})"></span>`;
+        html += `<span class="dot ${active}" role="button" aria-label="Vai a pagina ${i + 1}" onclick="goToPage(${i})"></span>`;
     }
     dotsContainer.innerHTML = html;
 }
@@ -345,8 +393,10 @@ function render() {
 
     if (currentTab === 'saved') {
         list = savedItems;
+    } else if (currentTab === 'deals') {
+        list = deals;
     } else {
-        list = currentTab === 'news' ? articles : deals;
+        list = articles;
     }
 
     const filtered = list.filter(i => {
@@ -383,8 +433,6 @@ function render() {
     updatePagePosition(false);
 }
 
-setInterval(() => {
-    loadData();
-}, 60000);
-
-loadData();
+// Avvio primario + refresh periodico discreto
+loadData(false);
+setInterval(() => loadData(true), 120000);
