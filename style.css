@@ -38,7 +38,6 @@ body {
     perspective: 1200px;
 }
 
-/* Toast Notifica per Nuove Notizie */
 .toast-update {
     position: fixed;
     top: 14px;
@@ -58,6 +57,9 @@ body {
     box-shadow: 0 10px 25px rgba(79, 70, 229, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.2);
     animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 @keyframes slideDown {
@@ -102,6 +104,7 @@ body {
     pointer-events: auto;
 }
 
+/* MODIFICATO: Aumentato il padding-bottom a 85px per distanziare il tasto nero dal menù in basso */
 .page-paper {
     background: var(--paper-bg);
     width: 100%;
@@ -110,7 +113,7 @@ body {
     max-height: calc(100vh - 16px);
     border-radius: 16px;
     box-shadow: var(--shadow);
-    padding: 14px 16px;
+    padding: 14px 16px 85px 16px;
     display: flex;
     flex-direction: column;
     border: 1px solid rgba(255, 255, 255, 0.7);
@@ -136,7 +139,14 @@ body {
 .card-tag.every { color: var(--badge-every); background: var(--badge-every-bg); }
 .card-tag.ig { color: var(--badge-ig); background: var(--badge-ig-bg); }
 
-.page-time { font-size: 0.62rem; font-weight: 700; color: var(--text-sub); }
+.page-time { 
+    font-size: 0.62rem; 
+    font-weight: 700; 
+    color: var(--text-sub); 
+    display: flex; 
+    align-items: center; 
+    gap: 4px; 
+}
 
 .star-btn { 
     background: rgba(245, 158, 11, 0.1); 
@@ -145,9 +155,9 @@ body {
     border-radius: 50%;
     display: grid;
     place-items: center;
-    font-size: 1rem; 
+    color: #f59e0b;
     cursor: pointer; 
-    opacity: 0.5;
+    opacity: 0.6;
     transition: all 0.2s;
 }
 .star-btn.active { opacity: 1; background: rgba(245, 158, 11, 0.25); border-color: #f59e0b; }
@@ -164,7 +174,7 @@ body {
 
 .page-cover {
     width: 100%;
-    height: clamp(160px, 32vh, 320px);
+    height: clamp(150px, 28vh, 300px);
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 10px;
@@ -174,7 +184,7 @@ body {
 
 .page-img { width: 100%; height: 100%; object-fit: cover; }
 
-.page-body { flex-grow: 1; margin-bottom: 8px; overflow-y: auto; }
+.page-body { flex-grow: 1; margin-bottom: 12px; overflow-y: auto; }
 .page-desc {
     font-size: 0.82rem;
     line-height: 1.5;
@@ -206,7 +216,6 @@ body {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: 50%;
-    font-size: 0.95rem;
     color: rgba(255, 255, 255, 0.85);
     cursor: pointer;
     z-index: 150;
@@ -224,7 +233,7 @@ body {
 
 .page-dots {
     position: fixed;
-    bottom: 76px;
+    bottom: 84px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -253,7 +262,7 @@ nav {
     bottom: 14px; 
     left: 50%; 
     transform: translateX(-50%); 
-    background: rgba(15, 23, 42, 0.25); 
+    background: rgba(15, 23, 42, 0.35); 
     border: 1px solid rgba(255, 255, 255, 0.08); 
     border-radius: 40px; 
     padding: 6px 14px; 
@@ -271,7 +280,6 @@ nav {
     color: rgba(148, 163, 184, 0.7); 
     width: 48px;
     height: 42px;
-    font-size: 1.2rem; 
     border-radius: 21px; 
     cursor: pointer; 
     display: grid;
@@ -296,7 +304,6 @@ nav {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
     color: #fff;
     cursor: pointer;
     backdrop-filter: blur(16px);
@@ -304,7 +311,6 @@ nav {
     z-index: 200;
     box-shadow: var(--shadow);
     transition: all 0.2s;
-    line-height: 1;
 }
 .floating-action-btn:hover { background: rgba(255, 255, 255, 0.12); transform: scale(1.05); }
 .filter-float-btn { left: 20px; }
