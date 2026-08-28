@@ -112,6 +112,17 @@
             margin: 0 auto; 
         }
 
+        .section-divider {
+            grid-column: 1 / -1;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+
         .card { 
             background: var(--surface); 
             border: 1px solid var(--border); 
@@ -206,9 +217,9 @@
             background: none; 
             border: none; 
             color: var(--text-sub); 
-            padding: 8px 16px; 
+            padding: 8px 18px; 
             font-weight: 800; 
-            font-size: 0.7rem; 
+            font-size: 0.72rem; 
             border-radius: 20px; 
             cursor: pointer; 
             display: flex;
@@ -267,7 +278,7 @@
 
         let articles = [];
         let deals = [];
-        let savedItems = JSON.parse(localStorage.getItem('np_unified_saved_v1') || '[]');
+        let savedItems = JSON.parse(localStorage.getItem('np_unified_saved_v2') || '[]');
         let currentTab = 'news';
 
         async function fetchProxy(url) {
@@ -280,7 +291,7 @@
                     let r = await fetch(p);
                     if (r.ok) {
                         let text = await r.text();
-                        if (text && text.includes("<rss")) return text;
+                        if (text && text.length > 100) return text;
                     }
                 } catch(e) {}
             }
@@ -298,137 +309,3 @@
             }
             let imgMatch = desc.match(/src=["'](.*?)["']/i);
             if (imgMatch && imgMatch[1]) {
-                return imgMatch[1];
-            }
-            return null;
-        }
-
-        function parseXML(xmlStr, source) {
-            if (!xmlStr) return [];
-            try {
-                let xml = new DOMParser().parseFromString(xmlStr, "text/xml");
-                return Array.from(xml.querySelectorAll("item")).map(i => {
-                    const link = (i.querySelector("link")?.textContent || "#").trim();
-                    const title = (i.querySelector("title")?.textContent || "").replace(/<[^>]*>?/gm, '').trim();
-                    const rawDesc = i.querySelector("description")?.textContent || "";
-                    const desc = rawDesc.replace(/<[^>]*>?/gm, '').slice(0, 90) + "...";
-                    const img = extractImage(i, rawDesc);
-
-                    return {
-                        id: link || title,
-                        title: title,
-                        link: link,
-                        desc: desc,
-                        image: img,
-                        source: source
-                    };
-                });
-            } catch(e) { return []; }
-        }
-
-        async function loadData() {
-            articles = [];
-            deals = [];
-
-            for (let f of FEEDS) {
-                let xml = await fetchProxy(f.url);
-                if (xml) articles.push(...parseXML(xml, f.name));
-            }
-
-            let dealsXml = await fetchProxy("https://www.instant-gaming.com/it/feed/rss/");
-            if (dealsXml) deals = parseXML(dealsXml, "Instant Gaming");
-
-            render();
-        }
-
-        async function manualRefresh() {
-            const btn = document.getElementById('refresh-btn');
-            btn.classList.add('spinning');
-            await loadData();
-            btn.classList.remove('spinning');
-        }
-
-        function toggleSave(e, id) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const pool = [...articles, ...deals, ...savedItems];
-            const item = pool.find(i => i.id === id);
-            if (!item) return;
-
-            const idx = savedItems.findIndex(i => i.id === id);
-            if (idx > -1) {
-                savedItems.splice(idx, 1);
-            } else {
-                savedItems.push(item);
-            }
-
-            localStorage.setItem('np_unified_saved_v1', JSON.stringify(savedItems));
-            render();
-        }
-
-        function switchTab(t) {
-            currentTab = t;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${t}`).classList.add('active');
-            render();
-        }
-
-        function render() {
-            const grid = document.getElementById('grid');
-            const q = document.getElementById('search').value.toLowerCase();
-            const selectedSource = document.getElementById('source-filter').value;
-            
-            let list = [];
-            if (currentTab === 'news') list = articles;
-            else if (currentTab === 'deals') list = deals;
-            else if (currentTab === 'saved') list = savedItems;
-
-            const filtered = list.filter(i => {
-                const matchesSearch = i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q);
-                const matchesFilter = selectedSource === 'ALL' || i.source === selectedSource;
-                return matchesSearch && matchesFilter;
-            });
-
-            grid.innerHTML = "";
-
-            if (filtered.length === 0) {
-                let emptyText = "NESSUN ELEMENTO TROVATO.";
-                if (currentTab === 'saved') emptyText = "NESSUN PREFERITO SALVATO.";
-                grid.innerHTML = `<div class="status-box">${emptyText}</div>`;
-                return;
-            }
-
-            filtered.forEach(item => {
-                const isSaved = savedItems.some(s => s.id === item.id);
-                
-                const card = document.createElement('a');
-                card.className = 'card';
-                card.href = item.link;
-                card.target = '_blank';
-                
-                const imageHTML = item.image ? `
-                    <div class="card-cover">
-                        <img class="card-img" src="${item.image}" alt="" loading="lazy">
-                    </div>
-                ` : '';
-
-                card.innerHTML = `
-                    ${imageHTML}
-                    <div class="card-body">
-                        <div class="card-header">
-                            <span class="card-tag">${item.source}</span>
-                            <button class="star-btn ${isSaved ? 'active' : ''}" onclick="toggleSave(event, '${item.id}')">⭐</button>
-                        </div>
-                        <h2 class="card-title">${item.title}</h2>
-                        <p class="card-desc">${item.desc}</p>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        loadData();
-    </script>
-</body>
-</html>
