@@ -14,20 +14,19 @@
 <body>
 
     <div class="modal-overlay" id="search-modal" onclick="closeModalOnOverlay(event, 'search-modal')">
-        <div class="modal-body">
+        <div class="modal-body" onclick="event.stopPropagation()">
             <div class="modal-title">CERCA NEL GIORNALE</div>
             <div class="filter-group">
                 <input type="text" id="search" class="modal-select" placeholder="SCRIVI E CERCA..." oninput="debounceRender()">
             </div>
-            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleSearchModal(false)">CHIUDI</button>
+            <button class="modal-action-btn" onclick="toggleSearchModal(false)">CERCA / CHIUDI</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="filter-modal" onclick="closeModalOnOverlay(event, 'filter-modal')">
-        <div class="modal-body">
-            <div class="modal-title">FILTRI</div>
+        <div class="modal-body" onclick="event.stopPropagation()">
+            <div class="modal-title">FILTRI PIATTAFORMA</div>
             <div class="filter-group">
-                <label class="filter-label">PIATTAFORMA</label>
                 <select id="platform-filter" class="modal-select" onchange="render()">
                     <option value="ALL">TUTTE LE PIATTAFORME</option>
                     <option value="PC">PC / STEAM</option>
@@ -36,7 +35,7 @@
                     <option value="NINTENDO">NINTENDO SWITCH</option>
                 </select>
             </div>
-            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleFilterModal(false)">APPLICA</button>
+            <button class="modal-action-btn" onclick="toggleFilterModal(false)">APPLICA</button>
         </div>
     </div>
 
