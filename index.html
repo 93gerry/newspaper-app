@@ -1,420 +1,144 @@
-Ecco il file **HTML e CSS totalmente integrati**. Ho riorganizzato e strutturato il codice CSS separando la parte di layout, componenti e modali in blocchi dedicati per renderlo scalabile e facile da gestire.
-
-L'architettura JavaScript è stata ottimizzata per gestire gli errori in background (senza bloccare la UI) e per consentire l'aggiornamento automatico ogni minuto.
-
-```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="NewsPaper">
     <meta name="theme-color" content="#030712">
-    
-    <title>NewsPaper 🐤 - News & Deals</title>
+    <title>NewsPaper 🐤</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        /* 1. VARIABLES & SYSTEM RESET */
         :root {
             --bg-base: #030712;
-            --surface-glass: rgba(15, 23, 42, 0.85);
-            --surface-card: rgba(15, 23, 42, 0.6);
-            --border-glass: rgba(255, 255, 255, 0.08);
+            --surface: #0f172a;
+            --border: rgba(255, 255, 255, 0.1);
             --primary: #ccff00;
-            --primary-glow: rgba(204, 255, 0, 0.15);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --nav-height: 50px;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            text-transform: uppercase; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; text-transform: uppercase; }
+        body { background: var(--bg-base); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
-        }
+        header { padding: 12px; background: rgba(3,7,18,0.9); border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
+        .logo { background: #7c3aed; width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; font-size: 1.2rem; }
+        .search { flex-grow: 1; background: var(--surface); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: #fff; outline: none; }
+        .btn-refresh { background: var(--surface); border: 1px solid var(--border); color: #fff; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; }
 
-        input, .card-snippet { text-transform: none !important; }
+        main { flex-grow: 1; overflow-y: auto; padding: 12px; padding-bottom: 80px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; max-width: 1000px; margin: 0 auto; }
 
-        /* 2. MAIN LAYOUT CONTAINER */
-        .app-layout {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
-            width: 100vw;
-            position: relative;
-        }
-
-        /* 3. HEADER & NAVIGATION TOP */
-        .top-bar { 
-            flex-shrink: 0;
-            z-index: 800; 
-            background: rgba(3, 7, 18, 0.92); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-glass); 
-            padding: 8px 12px;
-            padding-top: calc(env(safe-area-inset-top, 10px) + 6px);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand-logo { 
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
-            width: 34px; height: 34px; 
-            border-radius: 9px; 
-            display: grid; place-items: center; 
-            font-size: 1.1rem; 
-            flex-shrink: 0;
-            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
-        }
-
-        .search-box { position: relative; flex-grow: 1; }
-
-        .search-input {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid var(--border-glass);
-            padding: 7px 10px 7px 32px;
-            border-radius: 9px;
-            color: var(--text-main);
-            font-size: 0.8rem;
-            outline: none;
-            font-family: inherit;
-        }
-        .search-input:focus { border-color: rgba(204, 255, 0, 0.5); }
-        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 0.75rem; }
-
-        .action-icon-btn {
-            background: var(--surface-glass);
-            border: 1px solid var(--border-glass);
-            color: var(--text-main);
-            width: 34px; height: 34px;
-            border-radius: 9px;
-            display: grid; place-items: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: transform 0.15s;
-        }
-        .action-icon-btn:active { transform: scale(0.92); }
-        .action-icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; }
-        .action-icon-btn.spinning svg { animation: spin 0.8s linear infinite; }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* 4. CONTENT GRID & CARDS */
-        .scrollable-content {
-            flex-grow: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 12px;
-            padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 12px) + 20px);
-        }
-
-        .news-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 12px; 
-            max-width: 1200px; 
-            margin: 0 auto; 
-        }
-
-        .card { 
-            background: var(--surface-card); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-glass); 
-            border-radius: 14px; 
-            overflow: hidden; 
-            display: flex; flex-direction: column; 
-            color: inherit; text-decoration: none; 
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .card:active { transform: scale(0.98); }
-
-        .card-cover { width: 100%; height: 140px; position: relative; background: #0b0f19; overflow: hidden; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
-
-        .card-badges { 
-            position: absolute; top: 8px; left: 8px; right: 8px; 
-            display: flex; justify-content: space-between; align-items: center; z-index: 2; 
-        }
-        .source-tag { 
-            background: rgba(3, 7, 18, 0.85); 
-            backdrop-filter: blur(6px);
-            padding: 3px 8px; 
-            border-radius: 6px; 
-            font-size: 0.62rem; 
-            font-weight: 800; 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-        }
-
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+        .card-img { width: 100%; height: 130px; object-fit: cover; background: #1e293b; }
         .card-body { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; color: var(--text-main); }
-        .card-snippet { font-size: 0.75rem; color: var(--text-sub); line-height: 1.35; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-title { font-size: 0.85rem; font-weight: 800; margin-bottom: 6px; line-height: 1.2; }
+        .card-desc { font-size: 0.75rem; color: var(--text-sub); text-transform: none !important; line-height: 1.3; margin-bottom: 8px; }
+        .card-tag { font-size: 0.6rem; font-weight: 800; color: var(--primary); }
 
-        .card-footer { 
-            font-size: 0.65rem; color: var(--text-sub); 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-top: 1px solid var(--border-glass); 
-            padding-top: 8px; margin-top: auto; 
-        }
+        nav { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.95); border: 1px solid var(--border); border-radius: 30px; padding: 4px; display: flex; gap: 6px; backdrop-filter: blur(10px); }
+        .nav-btn { background: none; border: none; color: var(--text-sub); padding: 8px 16px; font-weight: 800; font-size: 0.7rem; border-radius: 20px; cursor: pointer; }
+        .nav-btn.active { background: var(--primary); color: #000; }
 
-        /* 5. NAVIGATION BAR BOTTOM */
-        .bottom-nav-wrapper {
-            position: fixed;
-            bottom: calc(env(safe-area-inset-bottom, 10px) + 6px); 
-            left: 0; width: 100%;
-            display: flex; justify-content: center;
-            z-index: 800;
-            pointer-events: none;
-            padding: 0 16px;
-        }
-
-        .bottom-nav { 
-            pointer-events: auto;
-            width: 100%; max-width: 340px;
-            height: var(--nav-height); 
-            background: rgba(15, 23, 42, 0.94); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.12); 
-            border-radius: 16px; 
-            display: flex; justify-content: space-around; align-items: center; 
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-            padding: 0 4px;
-        }
-
-        .nav-tab-btn { 
-            display: flex; align-items: center; gap: 6px; 
-            color: var(--text-sub); background: none; border: none; 
-            font-size: 0.7rem; font-weight: 800; cursor: pointer; 
-            height: 38px; padding: 0 12px; border-radius: 10px;
-            transition: all 0.2s;
-        }
-        .nav-tab-btn.active { color: var(--primary); background: var(--primary-glow); }
-
-        /* 6. UTILITY / STATUS BOX */
-        .status-box { grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-sub); }
-        .spinner { width: 30px; height: 30px; border: 3px solid var(--border-glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+        .error-box { text-align: center; grid-column: 1/-1; padding: 40px 20px; background: rgba(255,0,0,0.05); border: 1px dashed #ef4444; border-radius: 12px; }
     </style>
 </head>
 <body>
 
-    <div class="app-layout">
-        <header class="top-bar">
-            <div class="brand-logo">🐤</div>
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="search-input" class="search-input" placeholder="CERCA..." oninput="renderArticles()">
-            </div>
-            <button class="action-icon-btn" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
-                <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
-            </button>
-        </header>
+    <header>
+        <div class="logo">🐤</div>
+        <input type="text" id="search" class="search" placeholder="CERCA..." oninput="render()">
+        <button class="btn-refresh" onclick="loadData()">🔄</button>
+    </header>
 
-        <main class="scrollable-content">
-            <div class="news-grid" id="news-grid">
-                <div class="status-box">
-                    <div class="spinner"></div>
-                    <p>CARICAMENTO IN CORSO...</p>
-                </div>
-            </div>
-        </main>
-
-        <div class="bottom-nav-wrapper">
-            <nav class="bottom-nav">
-                <button class="nav-tab-btn active" id="nav-home" onclick="switchTab('home')">
-                    <span>📰</span><span>FEED</span>
-                </button>
-                <button class="nav-tab-btn" id="nav-deals" onclick="switchTab('deals')">
-                    <span>🏷️</span><span>OFFERTE</span>
-                </button>
-            </nav>
+    <main>
+        <div class="grid" id="grid">
+            <div style="text-align:center; grid-column:1/-1; padding:40px;">CARICAMENTO IN CORSO...</div>
         </div>
-    </div>
+    </main>
+
+    <nav>
+        <button class="nav-btn active" id="tab-news" onclick="switchTab('news')">📰 NEWS</button>
+        <button class="nav-btn" id="tab-deals" onclick="switchTab('deals')">🏷️ OFFERTE</button>
+    </nav>
 
     <script>
         const FEEDS = [
-            { name: "IGN Italia", url: "https://it.ign.com/feed.xml", color: "#ef4444" },
-            { name: "Multiplayer.it", url: "https://multiplayer.it/feed/rss/news/", color: "#f97316" },
-            { name: "Everyeye.it", url: "https://www.everyeye.it/feed/feed_news_rss.asp", color: "#3b82f6" }
+            { name: "IGN Italia", url: "https://it.ign.com/feed.xml" },
+            { name: "Multiplayer", url: "https://multiplayer.it/feed/rss/news/" }
         ];
 
-        let allArticles = [];
-        let allDeals = [];
-        let currentTab = 'home';
+        let articles = [];
+        let deals = [];
+        let currentTab = 'news';
 
-        function cleanText(text) {
-            if (!text) return "";
-            return text.replace(/<[^>]*>?/gm, '').trim();
-        }
-
-        async function fetchWithProxy(url) {
-            const proxyList = [
+        async function fetchProxy(url) {
+            const proxies = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
                 `https://corsproxy.io/?${encodeURIComponent(url)}`
             ];
-
-            for (let proxy of proxyList) {
+            for (let p of proxies) {
                 try {
-                    const res = await fetch(proxy);
-                    if (res.ok) {
-                        const data = await res.text();
-                        if (data && data.length > 50) return data;
+                    let r = await fetch(p);
+                    if (r.ok) {
+                        let text = await r.text();
+                        if (text && text.includes("<rss")) return text;
                     }
-                } catch (e) {}
+                } catch(e) {}
             }
             return null;
         }
 
-        function parseRSS(xmlText, sourceName, sourceColor) {
+        function parseXML(xmlStr, source) {
+            if (!xmlStr) return [];
             try {
-                const parser = new DOMParser();
-                const xml = parser.parseFromString(xmlText, "text/xml");
-                const items = Array.from(xml.querySelectorAll("item"));
-
-                return items.map(item => {
-                    const title = item.querySelector("title")?.textContent || "";
-                    const link = item.querySelector("link")?.textContent || "";
-                    const desc = item.querySelector("description")?.textContent || "";
-                    
-                    let img = "";
-                    const media = item.getElementsByTagName("media:content")[0];
-                    if (media) {
-                        img = media.getAttribute("url");
-                    } else {
-                        const matchImg = desc.match(/src=["'](.*?)["']/);
-                        if (matchImg) img = matchImg[1];
-                    }
-
-                    return {
-                        title: cleanText(title),
-                        link: link.trim(),
-                        snippet: cleanText(desc).slice(0, 95) + "...",
-                        image: img,
-                        source: sourceName,
-                        sourceColor: sourceColor
-                    };
-                }).filter(i => i.title && i.link);
-            } catch (e) {
-                return [];
-            }
+                let xml = new DOMParser().parseFromString(xmlStr, "text/xml");
+                return Array.from(xml.querySelectorAll("item")).map(i => ({
+                    title: i.querySelector("title")?.textContent || "",
+                    link: i.querySelector("link")?.textContent || "#",
+                    desc: (i.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, '').slice(0, 90) + "...",
+                    source: source
+                }));
+            } catch(e) { return []; }
         }
 
-        async function loadAllData() {
-            try {
-                let newsAcc = [];
-                for (let feed of FEEDS) {
-                    const rawXml = await fetchWithProxy(feed.url);
-                    if (rawXml) {
-                        const parsed = parseRSS(rawXml, feed.name, feed.color);
-                        newsAcc = newsAcc.concat(parsed);
-                    }
-                }
-                if (newsAcc.length > 0) allArticles = newsAcc;
+        async function loadData() {
+            document.getElementById('grid').innerHTML = '<div style="text-align:center; grid-column:1/-1; padding:40px;">CARICAMENTO...</div>';
+            
+            articles = [];
+            deals = [];
 
-                const rawDeals = await fetchWithProxy("https://www.instant-gaming.com/it/feed/rss/");
-                if (rawDeals) {
-                    allDeals = parseRSS(rawDeals, "Instant Gaming", "#ff5400");
-                }
-            } catch (e) {
-                console.error("Errore fetch:", e);
+            // 1. Carica News
+            for (let f of FEEDS) {
+                let xml = await fetchProxy(f.url);
+                if (xml) articles.push(...parseXML(xml, f.name));
             }
 
-            renderArticles();
+            // 2. Carica Instant Gaming
+            let dealsXml = await fetchProxy("https://www.instant-gaming.com/it/feed/rss/");
+            if (dealsXml) deals = parseXML(dealsXml, "Instant Gaming");
+
+            render();
         }
 
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`nav-${tab}`).classList.add('active');
-            renderArticles();
+        function switchTab(t) {
+            currentTab = t;
+            document.getElementById('tab-news').classList.toggle('active', t === 'news');
+            document.getElementById('tab-deals').classList.toggle('active', t === 'deals');
+            render();
         }
 
-        function manualRefresh() {
-            const btn = document.getElementById('refresh-btn');
-            btn.classList.add('spinning');
-            loadAllData().then(() => btn.classList.remove('spinning'));
-        }
-
-        function renderArticles() {
-            const grid = document.getElementById("news-grid");
-            const searchQuery = document.getElementById("search-input").value.toLowerCase();
-            const list = currentTab === 'home' ? allArticles : allDeals;
-
-            const filtered = list.filter(item => 
-                item.title.toLowerCase().includes(searchQuery) || 
-                item.snippet.toLowerCase().includes(searchQuery)
-            );
+        function render() {
+            const grid = document.getElementById('grid');
+            const q = document.getElementById('search').value.toLowerCase();
+            const list = (currentTab === 'news' ? articles : deals).filter(i => i.title.toLowerCase().includes(q));
 
             grid.innerHTML = "";
 
-            if (filtered.length === 0) {
+            if (list.length === 0) {
                 grid.innerHTML = `
-                    <div class="status-box">
-                        <p>NESSUN RISULTATO DISPONIBILE.</p>
-                        <button onclick="manualRefresh()" style="margin-top:12px; padding:8px 16px; background:var(--primary); border:none; border-radius:8px; font-weight:800; color:#030712; cursor:pointer;">AGGIORNA</button>
-                    </div>`;
-                return;
-            }
-
-            filtered.forEach(item => {
-                const card = document.createElement("a");
-                card.className = "card";
-                card.href = item.link;
-                card.target = "_blank";
-                card.rel = "noopener";
-
-                const imageBlock = item.image ? `
-                    <div class="card-cover">
-                        <img class="card-img" src="${item.image}" alt="" loading="lazy">
-                        <div class="card-badges">
-                            <span class="source-tag" style="color:${item.sourceColor}">${item.source}</span>
-                        </div>
-                    </div>` : `
-                    <div style="padding: 10px 12px 0 12px;">
-                        <span class="source-tag" style="color:${item.sourceColor}">${item.source}</span>
-                    </div>`;
-
-                card.innerHTML = `
-                    ${imageBlock}
-                    <div class="card-body">
-                        <h2 class="card-title">${item.title}</h2>
-                        <p class="card-snippet">${item.snippet}</p>
-                        <div class="card-footer">
-                            <span>🔗 VEDI DETTAGLI</span>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        loadAllData();
-        setInterval(loadAllData, 60000);
-    </script>
-</body>
-</html>
-
-```
+                    <div class="error-box">
+                        <p style="color:#ef4444; font-weight:800; margin-bottom:8px;">IMPOSSIBILE CARICARE I DATI LIVE</p>
+                        <p style="font-size:0.7
