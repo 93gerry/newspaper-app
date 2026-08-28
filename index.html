@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#f1f5f9">
+    <meta name="theme-color" content="#f8fafc">
     <title>NewsPaper 🐤</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,22 +13,31 @@
     <style>
         :root {
             --bg-base: #f8fafc;
-            --surface: rgba(255, 255, 255, 0.75);
             --surface-card: #ffffff;
             --border: rgba(226, 232, 240, 0.8);
-            --primary: #4f46e5;
-            --primary-light: #e0e7ff;
+            --primary: #6366f1;
+            --primary-light: #eeefff;
             --text-main: #0f172a;
             --text-sub: #64748b;
-            --shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.15);
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow: 0 4px 16px -2px rgba(148, 163, 184, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+
+            /* Flag Colorati Fonti */
+            --badge-ign: #ef4444;
+            --badge-ign-bg: #fef2f2;
+            --badge-multi: #2563eb;
+            --badge-multi-bg: #eff6ff;
+            --badge-every: #059669;
+            --badge-every-bg: #ecfdf5;
+            --badge-ig: #f97316;
+            --badge-ig-bg: #fff7ed;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; text-transform: uppercase; }
         
         body { 
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             color: var(--text-main); 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             height: 100vh; 
@@ -44,63 +53,72 @@
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border); 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             align-items: center; 
             z-index: 100;
         }
         
         .logo { 
             background: linear-gradient(135deg, #6366f1, #4f46e5); 
-            width: 38px; height: 38px; 
-            border-radius: 12px; 
+            width: 36px; height: 36px; 
+            border-radius: 10px; 
             display: grid; 
             place-items: center; 
-            font-size: 1.2rem; 
+            font-size: 1.1rem; 
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
         }
         
         .search { 
             flex-grow: 1;
-            background: rgba(255, 255, 255, 0.8); 
+            background: rgba(255, 255, 255, 0.85); 
             border: 1px solid var(--border); 
-            padding: 10px 14px; 
+            padding: 9px 12px; 
             border-radius: 10px; 
             color: var(--text-main); 
             outline: none; 
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             transition: all 0.2s;
         }
         .search:focus {
             border-color: var(--primary);
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+
+        .count-pill {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 20px;
+            white-space: nowrap;
         }
 
         .btn-ui {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 0 14px;
-            height: 38px;
+            padding: 0 10px;
+            height: 36px;
             border-radius: 10px;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             flex-shrink: 0;
             transition: all 0.2s;
         }
-        .btn-ui.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
 
         .btn-icon { 
-            background: rgba(255, 255, 255, 0.8); 
+            background: rgba(255, 255, 255, 0.85); 
             border: 1px solid var(--border); 
             color: var(--text-main); 
-            width: 38px; height: 38px; 
+            width: 36px; height: 36px; 
             border-radius: 10px; 
             cursor: pointer; 
             flex-shrink: 0;
@@ -108,27 +126,27 @@
             place-items: center;
             transition: all 0.2s;
         }
-        .btn-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+        .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; }
         .btn-icon.spinning svg { animation: spin 0.8s linear infinite; }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.25); backdrop-filter: blur(8px);
             z-index: 300; display: none; align-items: center; justify-content: center;
             padding: 16px;
         }
         .modal-overlay.open { display: flex; }
         .modal-body {
-            background: rgba(255, 255, 255, 0.9); border: 1px solid var(--glass-border);
-            border-radius: 20px; padding: 24px; width: 100%; max-width: 400px;
-            display: flex; flex-direction: column; gap: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 20px; width: 100%; max-width: 380px;
+            display: flex; flex-direction: column; gap: 14px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
         }
-        .modal-title { font-size: 0.85rem; font-weight: 800; color: var(--primary); }
+        .modal-title { font-size: 0.8rem; font-weight: 800; color: var(--primary); }
         .filter-group { display: flex; flex-direction: column; gap: 6px; }
-        .filter-label { font-size: 0.68rem; color: var(--text-sub); font-weight: 700; }
+        .filter-label { font-size: 0.65rem; color: var(--text-sub); font-weight: 700; }
         .modal-select {
             background: #fff; border: 1px solid var(--border);
             color: var(--text-main); padding: 10px; border-radius: 10px; font-weight: 700; font-size: 0.75rem;
@@ -137,33 +155,32 @@
         main { 
             flex-grow: 1; 
             overflow-y: auto; 
-            padding: 16px; 
+            padding: 14px; 
             padding-bottom: 90px; 
         }
         
         .grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 16px; 
+            gap: 14px; 
             max-width: 1100px; 
             margin: 0 auto; 
         }
 
         .section-divider {
             grid-column: 1 / -1;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 800;
             color: var(--primary);
             border-bottom: 1px solid var(--border);
             padding-bottom: 6px;
-            margin-top: 10px;
-            margin-bottom: 4px;
+            margin-top: 8px;
         }
 
         .card { 
             background: var(--surface-card); 
             border: 1px solid var(--border); 
-            border-radius: 16px; 
+            border-radius: 14px; 
             overflow: hidden; 
             text-decoration: none; 
             color: inherit; 
@@ -175,13 +192,13 @@
         }
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px -3px rgba(148, 163, 184, 0.25);
+            box-shadow: 0 8px 20px -2px rgba(148, 163, 184, 0.2);
         }
 
         .card-cover {
             width: 100%;
-            height: 150px;
-            background: #e2e8f0;
+            height: 140px;
+            background: #f1f5f9;
             overflow: hidden;
             position: relative;
         }
@@ -193,7 +210,7 @@
         }
         
         .card-body { 
-            padding: 14px; 
+            padding: 12px; 
             display: flex; 
             flex-direction: column; 
             flex-grow: 1; 
@@ -209,32 +226,37 @@
         .card-meta {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
+        /* Styling Flag Fonti */
         .card-tag { 
-            font-size: 0.65rem; 
+            font-size: 0.6rem; 
             font-weight: 800; 
-            color: var(--primary); 
-            background: var(--primary-light);
-            padding: 3px 8px;
+            padding: 3px 7px;
             border-radius: 6px;
+            letter-spacing: 0.3px;
         }
+        .card-tag.ign { color: var(--badge-ign); background: var(--badge-ign-bg); }
+        .card-tag.multi { color: var(--badge-multi); background: var(--badge-multi-bg); }
+        .card-tag.every { color: var(--badge-every); background: var(--badge-every-bg); }
+        .card-tag.ig { color: var(--badge-ig); background: var(--badge-ig-bg); }
 
         .card-time {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
             color: var(--text-sub);
         }
         
         .star-btn {
-            background: none; border: none; font-size: 1.1rem;
-            cursor: pointer; padding: 2px; opacity: 0.25; transition: opacity 0.2s;
+            background: none; border: none; font-size: 1rem;
+            cursor: pointer; padding: 2px; opacity: 0.2; transition: opacity 0.2s, transform 0.2s;
         }
-        .star-btn.active { opacity: 1; }
+        .star-btn.active { opacity: 1; transform: scale(1.1); }
 
         .card-title { 
-            font-size: 0.82rem; 
+            font-size: 0.8rem; 
             font-weight: 800; 
             margin-bottom: 6px; 
             line-height: 1.3; 
@@ -242,30 +264,43 @@
         }
         
         .card-desc { 
-            font-size: 0.73rem; 
+            font-size: 0.72rem; 
             color: var(--text-sub); 
             text-transform: none !important; 
-            line-height: 1.4; 
+            line-height: 1.35; 
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
+        /* Skeleton Loading Effect */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.4s infinite;
+            border-radius: 14px;
+            height: 200px;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         nav { 
             position: fixed; 
-            bottom: 20px; 
+            bottom: 18px; 
             left: 50%; 
             transform: translateX(-50%); 
             background: var(--glass-bg); 
             border: 1px solid var(--glass-border); 
-            border-radius: 40px; 
-            padding: 5px; 
+            border-radius: 30px; 
+            padding: 4px; 
             display: flex; 
             gap: 4px; 
             backdrop-filter: blur(16px); 
             -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.2);
             z-index: 200;
         }
         
@@ -273,10 +308,10 @@
             background: none; 
             border: none; 
             color: var(--text-sub); 
-            padding: 10px 20px; 
+            padding: 9px 18px; 
             font-weight: 800; 
-            font-size: 0.7rem; 
-            border-radius: 30px; 
+            font-size: 0.68rem; 
+            border-radius: 20px; 
             cursor: pointer; 
             display: flex;
             align-items: center;
@@ -287,16 +322,16 @@
         .nav-btn.active { 
             background: var(--primary); 
             color: #fff; 
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         .status-box { 
             text-align: center; 
             grid-column: 1 / -1; 
-            padding: 50px 20px; 
+            padding: 40px 20px; 
             color: var(--text-sub); 
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
         }
     </style>
 </head>
@@ -305,6 +340,7 @@
     <header>
         <div class="logo">🐤</div>
         <input type="text" id="search" class="search" placeholder="CERCA..." oninput="render()">
+        <div class="count-pill" id="item-count">0</div>
         <button class="btn-ui" id="filter-btn" onclick="toggleModal(true)">⚙️ FILTRI</button>
         <button class="btn-icon" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
             <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
@@ -336,13 +372,15 @@
                 </select>
             </div>
 
-            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:8px;" onclick="toggleModal(false)">APPLICA FILTRI</button>
+            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleModal(false)">APPLICA FILTRI</button>
         </div>
     </div>
 
     <main>
         <div class="grid" id="grid">
-            <div class="status-box">CARICAMENTO IN CORSO...</div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
         </div>
     </main>
 
@@ -354,26 +392,32 @@
 
     <script>
         const FEEDS = [
-            { name: "IGN Italia", url: "https://it.ign.com/feed.xml" },
-            { name: "Multiplayer", url: "https://multiplayer.it/feed/rss/news/" },
-            { name: "Everyeye", url: "https://www.everyeye.it/feed/feed_news_rss.asp" }
+            { name: "IGN Italia", url: "https://it.ign.com/feed.xml", class: "ign" },
+            { name: "Multiplayer", url: "https://multiplayer.it/feed/rss/news/", class: "multi" },
+            { name: "Everyeye", url: "https://www.everyeye.it/feed/feed_news_rss.asp", class: "every" }
         ];
 
         let articles = [];
         let deals = [];
-        let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v5') || '[]');
+        let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v6') || '[]');
         let currentTab = 'news';
 
         function toggleModal(open) {
             document.getElementById('filter-modal').classList.toggle('open', open);
         }
 
-        function formatTime(dateStr) {
+        function formatDateTime(dateStr) {
             if (!dateStr) return '';
             try {
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) return '';
-                return date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = date.toLocaleString('it-IT', { month: 'short' }).toUpperCase().replace('.', '');
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                
+                return `${day} ${month} - ${hours}:${minutes}`;
             } catch (e) {
                 return '';
             }
@@ -399,7 +443,7 @@
                                 link: item.link,
                                 desc: (item.description || '').replace(/<[^>]*>?/gm, '').slice(0, 95) + '...',
                                 image: item.thumbnail || item.enclosure?.link || extractImageFromHtml(item.content || item.description),
-                                time: formatTime(item.pubDate)
+                                time: formatDateTime(item.pubDate)
                             }));
                         }
                     } else {
@@ -438,7 +482,7 @@
                         link: link,
                         desc: descRaw.replace(/<[^>]*>?/gm, '').slice(0, 95) + "...",
                         image: img,
-                        time: formatTime(pubDateRaw)
+                        time: formatDateTime(pubDateRaw)
                     };
                 });
             } catch(e) {
@@ -452,16 +496,17 @@
 
             const newsTasks = FEEDS.map(async f => {
                 const items = await fetchFeedData(f.url);
-                return items.map(i => ({ ...i, source: f.name, type: 'news' }));
+                return items.map(i => ({ ...i, source: f.name, sourceClass: f.class, type: 'news' }));
             });
 
             const dealsTask = (async () => {
                 const items = await fetchFeedData("https://www.instant-gaming.com/it/feed/rss/");
-                return items.map(i => ({ 
+                return items.map((i, idx) => ({ 
                     ...i, 
                     source: "Instant Gaming", 
+                    sourceClass: "ig",
                     type: 'deal',
-                    image: i.image || "https://www.instant-gaming.com/themes/igv2/images/img_og.jpg"
+                    image: i.image || `https://gaming-cdn.com/images/products/${idx + 1000}/300x400/cover.jpg`
                 }));
             })();
 
@@ -481,6 +526,10 @@
         async function manualRefresh() {
             const btn = document.getElementById('refresh-btn');
             btn.classList.add('spinning');
+            
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+            
             await loadData();
             btn.classList.remove('spinning');
         }
@@ -500,7 +549,7 @@
                 savedItems.push(item);
             }
 
-            localStorage.setItem('np_saved_items_v5', JSON.stringify(savedItems));
+            localStorage.setItem('np_saved_items_v6', JSON.stringify(savedItems));
             render();
         }
 
@@ -532,7 +581,7 @@
                 <div class="card-body">
                     <div class="card-header">
                         <div class="card-meta">
-                            <span class="card-tag">${item.source}</span>
+                            <span class="card-tag ${item.sourceClass || 'ig'}">${item.source}</span>
                             ${timeHTML}
                         </div>
                         <button class="star-btn ${isSaved ? 'active' : ''}" onclick="toggleSave(event, '${item.id.replace(/'/g, "\\'")}')">⭐</button>
@@ -546,6 +595,7 @@
 
         function render() {
             const grid = document.getElementById('grid');
+            const countPill = document.getElementById('item-count');
             const q = document.getElementById('search').value.toLowerCase();
             const newsSource = document.getElementById('news-source-filter').value;
             const platformFilter = document.getElementById('platform-filter').value;
@@ -557,6 +607,8 @@
                 const savedFiltered = savedItems.filter(i => {
                     return i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q);
                 });
+
+                countPill.textContent = savedFiltered.length;
 
                 if (savedFiltered.length === 0) {
                     grid.innerHTML = `<div class="status-box">NESSUN PREFERITO SALVATO.</div>`;
@@ -599,6 +651,8 @@
 
                 return matchesSearch && matchesFilter;
             });
+
+            countPill.textContent = filtered.length;
 
             if (filtered.length === 0) {
                 grid.innerHTML = `<div class="status-box">NESSUN ELEMENTO TROVATO.</div>`;
