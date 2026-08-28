@@ -8,7 +8,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,17 +16,14 @@
     <header>
         <div class="logo">🐤</div>
         <input type="text" id="search" class="search" placeholder="CERCA NEL GIORNALE..." oninput="debounceRender()">
-        <button class="btn-ui" id="filter-btn" onclick="toggleModal(true)">⚙️ FILTRI</button>
-        <button class="btn-icon" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
-            <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
-        </button>
+        <button class="btn-ui" id="filter-btn" style="display:none;" onclick="toggleModal(true)">⚙️ FILTRI</button>
     </header>
 
     <div class="modal-overlay" id="filter-modal" onclick="closeModalOnOverlay(event)">
         <div class="modal-body">
-            <div class="modal-title">PANNELLO FILTRI</div>
+            <div class="modal-title" id="modal-title-text">FILTRI OFFERTE</div>
             
-            <div class="filter-group">
+            <div class="filter-group" id="group-news-source" style="display:none;">
                 <label class="filter-label">FONTE NEWS</label>
                 <select id="news-source-filter" class="modal-select" onchange="render()">
                     <option value="ALL">TUTTE LE FONTI</option>
@@ -36,22 +33,22 @@
                 </select>
             </div>
 
-            <div class="filter-group">
-                <label class="filter-label">PIATTAFORMA OFFERTE</label>
+            <div class="filter-group" id="group-platform">
+                <label class="filter-label">PIATTAFORMA</label>
                 <select id="platform-filter" class="modal-select" onchange="render()">
                     <option value="ALL">TUTTE LE PIATTAFORME</option>
                     <option value="PC">PC / STEAM</option>
-                    <option value="PS5">PLAYSTATION</option>
+                    <option value="PLAYSTATION">PLAYSTATION</option>
                     <option value="XBOX">XBOX</option>
-                    <option value="SWITCH">NINTENDO SWITCH</option>
+                    <option value="NINTENDO">NINTENDO SWITCH</option>
                 </select>
             </div>
 
-            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleModal(false)">APPLICA FILTRI</button>
+            <button class="btn-ui" style="justify-content:center; background:var(--primary); color:#fff; margin-top:6px;" onclick="toggleModal(false)">APPLICA</button>
         </div>
     </div>
 
-    <!-- Pulsanti laterali PC (disposti ai margini a metà altezza) -->
+    <!-- Pulsanti laterali PC -->
     <button class="arrow-nav prev" id="arrow-prev" onclick="prevPage()">❮</button>
     <button class="arrow-nav next" id="arrow-next" onclick="nextPage()">❯</button>
 
@@ -59,19 +56,20 @@
         <div class="newspaper-track" id="newspaper-track">
             <div class="newspaper-page">
                 <div class="page-paper empty-state">
-                    <h1 class="page-title">CARICAMENTO IN CORSO...</h1>
-                    <p class="page-desc">STIAMO SCARICANDO LE ULTIME NOTIZIE DALLE FONTI.</p>
+                    <h1 class="page-title">CARICAMENTO...</h1>
+                    <p class="page-desc">SCARICAMENTO CONTENUTI IN CORSO.</p>
                 </div>
             </div>
         </div>
     </main>
 
-    <div class="page-indicator" id="page-indicator">PAGINA 0 DI 0</div>
+    <!-- Indicatore a pallini -->
+    <div class="page-dots" id="page-dots"></div>
 
     <nav>
-        <button class="nav-btn active" id="tab-news" onclick="switchTab('news')">📰 NEWS</button>
-        <button class="nav-btn" id="tab-deals" onclick="switchTab('deals')">🏷️ OFFERTE</button>
-        <button class="nav-btn" id="tab-saved" onclick="switchTab('saved')">⭐ PREFERITI</button>
+        <button class="nav-btn active" id="tab-news" onclick="switchTab('news')" title="NEWS">📰</button>
+        <button class="nav-btn" id="tab-deals" onclick="switchTab('deals')" title="OFFERTE">🏷️</button>
+        <button class="nav-btn" id="tab-saved" onclick="switchTab('saved')" title="PREFERITI">⭐</button>
     </nav>
 
     <script src="script.js"></script>
