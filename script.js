@@ -8,7 +8,7 @@ const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
 
 let articles = [];
 let deals = [];
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v13') || '[]');
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v14') || '[]');
 let currentTab = 'news';
 let currentPageIndex = 0;
 let totalPages = 0;
@@ -144,7 +144,7 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v13', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v14', JSON.stringify(savedItems));
     render();
 }
 
@@ -179,7 +179,7 @@ function createPageElement(item) {
         <div class="page-cover">
             <img class="page-img" src="${item.image}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'">
         </div>
-    ` : '<div class="page-cover-placeholder">🐤 NEWSPAPER EDITION</div>';
+    ` : '';
 
     const timeHTML = item.time ? `<span class="page-time">🕒 ${item.time}</span>` : '';
 
