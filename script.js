@@ -8,7 +8,7 @@ const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
 
 let articles = [];
 let deals = [];
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v9') || '[]');
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v10') || '[]');
 let currentTab = 'news';
 let currentPageIndex = 0;
 let totalPages = 0;
@@ -53,7 +53,7 @@ function parseXMLDoc(xmlString) {
         const title = (i.querySelector("title")?.textContent || "").replace(/<[^>]*>?/gm, '').trim();
         const link = (i.querySelector("link")?.textContent || "#").trim();
         const pubDate = i.querySelector("pubDate")?.textContent || "";
-        const descRaw = i.querySelector("description")?.textContent || i.querySelector("content\\:encoded")?.textContent || "";
+        const descRaw = i.querySelector("description")?.textContent || "";
         
         let img = null;
         const mediaContent = i.getElementsByTagName("media:content")[0];
@@ -83,21 +83,16 @@ function parseXMLDoc(xmlString) {
     });
 }
 
-// Fetcher dedicato con fallback multiplo ultra-affidabile per Instant Gaming e News
 async function fetchFeed(url) {
-    // Strategia 1: Proxy CorsProxy con query diretta
     try {
-        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
         if (res.ok) {
-            const data = await res.json();
-            if (data?.contents) {
-                const parsed = parseXMLDoc(data.contents);
-                if (parsed.length > 0) return parsed;
-            }
+            const text = await res.text();
+            const parsed = parseXMLDoc(text);
+            if (parsed.length > 0) return parsed;
         }
     } catch(e) {}
 
-    // Strategia 2: RSS2JSON api
     try {
         const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
         if (res.ok) {
@@ -119,35 +114,16 @@ async function fetchFeed(url) {
 }
 
 async function loadData() {
-    const newsPromises = FEEDS.map(f => 
-        fetchFeed(f.url).then(items => 
-            items.map(i => ({ ...i, source: f.name, sourceClass: f.class, type: 'news' }))
-        )
-    );
-
-    const dealsPromise = fetchFeed(DEALS_FEED).then(items =>
-        items.map(i => ({
-            ...i,
-            source: "Instant Gaming",
-            sourceClass: "ig",
-            type: 'deal'
-        }))
-    );
-
-    const results = await Promise.allSettled([...newsPromises, dealsPromise]);
-
     articles = [];
     deals = [];
 
-    results.forEach((res, idx) => {
-        if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-            if (idx < FEEDS.length) {
-                articles.push(...res.value);
-            } else {
-                deals.push(...res.value);
-            }
-        }
-    });
+    for (const f of FEEDS) {
+        const items = await fetchFeed(f.url);
+        articles.push(...items.map(i => ({ ...i, source: f.name, sourceClass: f.class, type: 'news' })));
+    }
+
+    const dealItems = await fetchFeed(DEALS_FEED);
+    deals.push(...dealItems.map(i => ({ ...i, source: "Instant Gaming", sourceClass: "ig", type: 'deal' })));
 
     render();
 }
@@ -174,7 +150,7 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v9', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v10', JSON.stringify(savedItems));
     render();
 }
 
@@ -195,7 +171,7 @@ function debounceRender() {
     }, 150);
 }
 
-function createPageElement(item, index, total) {
+function createPageElement(item) {
     const isSaved = savedItems.some(s => s.id === item.id);
     const page = document.createElement('div');
     page.className = 'newspaper-page';
@@ -234,11 +210,12 @@ function createPageElement(item, index, total) {
     return page;
 }
 
-function updatePagePosition() {
+function updatePagePosition(animate = true) {
     const track = document.getElementById('newspaper-track');
     const indicator = document.getElementById('page-indicator');
     
     if (track) {
+        track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
         track.style.transform = `translateX(-${currentPageIndex * 100}vw)`;
     }
     
@@ -266,30 +243,39 @@ function nextPage() {
     }
 }
 
-// Gestione gesti Touch / Swipe Orizzontale
+// Gestione Touch Swipe Fluido con il dito su smartphone
 let touchStartX = 0;
-let touchEndX = 0;
+let touchCurrentX = 0;
+let isSwiping = false;
 
-document.addEventListener('touchstart', e => {
-    touchStartX = e.changedTouches[0].screenX;
+const viewport = document.getElementById('viewport');
+
+viewport.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    isSwiping = true;
 }, { passive: true });
 
-document.addEventListener('touchend', e => {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
+viewport.addEventListener('touchmove', e => {
+    if (!isSwiping) return;
+    touchCurrentX = e.touches[0].clientX;
 }, { passive: true });
 
-function handleSwipe() {
-    const swipeThreshold = 50;
-    if (touchEndX < touchStartX - swipeThreshold) {
-        nextPage();
-    }
-    if (touchEndX > touchStartX + swipeThreshold) {
-        prevPage();
-    }
-}
+viewport.addEventListener('touchend', () => {
+    if (!isSwiping) return;
+    isSwiping = false;
+    const diff = touchStartX - touchCurrentX;
+    const threshold = 50;
 
-// Gestione tastiera (frecce destra/sinistra)
+    if (Math.abs(diff) > threshold) {
+        if (diff > 0) {
+            nextPage();
+        } else {
+            prevPage();
+        }
+    }
+}, { passive: true });
+
+// Gestione tastiera PC
 document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') nextPage();
     if (e.key === 'ArrowLeft') prevPage();
@@ -339,8 +325,8 @@ function render() {
         track.innerHTML = `
             <div class="newspaper-page">
                 <div class="page-paper empty-state">
-                    <h2>NESSUN RISULTATO</h2>
-                    <p>Controlla i filtri o premi aggiorna in alto.</p>
+                    <h1 class="page-title">NESSUN RISULTATO</h1>
+                    <p class="page-desc">CAMBIA I FILTRI O VERIFICA LA CONNESSIONE.</p>
                 </div>
             </div>
         `;
@@ -348,11 +334,11 @@ function render() {
         return;
     }
 
-    filtered.forEach((item, idx) => {
-        track.appendChild(createPageElement(item, idx, totalPages));
+    filtered.forEach(item => {
+        track.appendChild(createPageElement(item));
     });
 
-    updatePagePosition();
+    updatePagePosition(false);
 }
 
 loadData();
