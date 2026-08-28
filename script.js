@@ -4,21 +4,25 @@ const FEEDS = [
     { name: "Everyeye", url: "https://www.everyeye.it/feed/feed_news_rss.asp", class: "every" }
 ];
 
-const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
-
-// Proxy CORS a cascata per garantire massima affidabilità
 const PROXIES = [
     url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
     url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
 ];
 
+// Icone SVG Minimal Riutilizzabili
+const ICONS = {
+    star: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    starFilled: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    clock: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
+};
+
 let articles = [];
 let deals = [];
 let pendingArticles = null;
 let pendingDeals = null;
 
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v17') || '[]');
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v18') || '[]');
 let currentTab = 'news';
 let currentPageIndex = 0;
 let totalPages = 0;
@@ -104,7 +108,7 @@ async function fetchFeed(url) {
     for (const proxyFn of PROXIES) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6 secondi timeout
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
             const res = await fetch(proxyFn(url), { signal: controller.signal });
             clearTimeout(timeoutId);
 
@@ -115,11 +119,40 @@ async function fetchFeed(url) {
                     if (parsed.length > 0) return parsed;
                 }
             }
-        } catch (e) {
-            // Se fallisce passa al prossimo proxy
-        }
+        } catch (e) {}
     }
     return [];
+}
+
+// NUOVO MOTORE OFFERTE (COMPLETAMENTE RIFATTO)
+// Usa CheapShark API (Zero problemi CORS, dati in tempo reale su giochi e sconti)
+async function fetchDealsEngine() {
+    try {
+        const res = await fetch("https://www.cheapshark.com/api/1.0/deals?storeID=1&pageSize=30&sortBy=Metacritic");
+        if (res.ok) {
+            const data = await res.json();
+            return data.map(d => {
+                const savings = Math.round(parseFloat(d.savings));
+                return {
+                    id: `deal-${d.dealID}`,
+                    title: `${d.title} (-${savings}%)`,
+                    link: `https://www.cheapshark.com/redirect?dealID=${d.dealID}`,
+                    desc: `OFFERTA STEAM: PREZZO SCONTATO A $${d.salePrice} (PREZZO ORIGINALE $${d.normalPrice}). VALUTAZIONE RATING: ${d.steamRatingText || 'MOLTO POSITIVA'}.`,
+                    image: d.thumb ? d.thumb.replace('capsule_sm_120', 'header') : null,
+                    time: "IN CORSO",
+                    source: "STEAM DEAL",
+                    sourceClass: "ig",
+                    type: 'deal'
+                };
+            });
+        }
+    } catch (e) {
+        console.warn("CheapShark fallback atteso");
+    }
+
+    // Backup RSS Instant Gaming (nel caso la prima chiamata fallisca)
+    const igItems = await fetchFeed("https://www.instant-gaming.com/it/feed/rss/");
+    return igItems.map(i => ({ ...i, source: "Instant Gaming", sourceClass: "ig", type: 'deal' }));
 }
 
 async function loadData(isBackgroundRefresh = false) {
@@ -129,10 +162,7 @@ async function loadData(isBackgroundRefresh = false) {
             return items.map(i => ({ ...i, source: f.name, sourceClass: f.class, type: 'news' }));
         });
 
-        const dealsPromise = fetchFeed(DEALS_FEED).then(items => 
-            items.map(i => ({ ...i, source: "Instant Gaming", sourceClass: "ig", type: 'deal' }))
-        );
-
+        const dealsPromise = fetchDealsEngine();
         const results = await Promise.all([...newsPromises, dealsPromise]);
         
         const fetchedNews = [];
@@ -144,7 +174,6 @@ async function loadData(isBackgroundRefresh = false) {
             deals = fetchedDeals;
             render();
         } else {
-            // Verifica se ci sono nuove notizie
             const hasNewArticles = fetchedNews.length > 0 && fetchedNews[0].id !== articles[0]?.id;
             const hasNewDeals = fetchedDeals.length > 0 && fetchedDeals[0].id !== deals[0]?.id;
 
@@ -161,7 +190,7 @@ async function loadData(isBackgroundRefresh = false) {
 
 function showToastUpdate(show) {
     const toast = document.getElementById('toast-update');
-    if (toast) toast.style.display = show ? 'block' : 'none';
+    if (toast) toast.style.display = show ? 'flex' : 'none';
 }
 
 function applyPendingUpdates() {
@@ -189,7 +218,7 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v17', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v18', JSON.stringify(savedItems));
     render();
 }
 
@@ -226,7 +255,7 @@ function createPageElement(item) {
         </div>
     ` : '';
 
-    const timeHTML = item.time ? `<span class="page-time">🕒 ${item.time}</span>` : '';
+    const timeHTML = item.time ? `<span class="page-time">${ICONS.clock} ${item.time}</span>` : '';
 
     page.innerHTML = `
         <div class="page-paper" data-link="${item.link}">
@@ -238,7 +267,9 @@ function createPageElement(item) {
                 <button class="star-btn ${isSaved ? 'active' : ''}" 
                         aria-label="${isSaved ? 'Rimuovi dai preferiti' : 'Salva nei preferiti'}"
                         onclick="toggleSave(event, '${item.id.replace(/'/g, "\\'")}')" 
-                        title="PREFERITO">⭐</button>
+                        title="PREFERITO">
+                        ${isSaved ? ICONS.starFilled : ICONS.star}
+                </button>
             </div>
             
             <h1 class="page-title">${item.title}</h1>
@@ -250,7 +281,7 @@ function createPageElement(item) {
             </div>
 
             <div class="page-footer">
-                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-btn" aria-label="Leggi articolo completo su ${item.source}">SWIPE IN ALTO ARTICOLO COMPLETO</a>
+                <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-btn" aria-label="Leggi articolo completo">SWIPE IN ALTO ARTICOLO COMPLETO</a>
             </div>
         </div>
     `;
@@ -433,6 +464,5 @@ function render() {
     updatePagePosition(false);
 }
 
-// Avvio primario + refresh periodico discreto
 loadData(false);
 setInterval(() => loadData(true), 120000);
