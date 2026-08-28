@@ -16,7 +16,6 @@
             --surface: #0f172a;
             --border: rgba(255, 255, 255, 0.1);
             --primary: #ccff00;
-            --primary-glow: rgba(204, 255, 0, 0.15);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
         }
@@ -38,7 +37,7 @@
             background: rgba(3, 7, 18, 0.95); 
             border-bottom: 1px solid var(--border); 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             align-items: center; 
             z-index: 100;
         }
@@ -53,8 +52,14 @@
             flex-shrink: 0;
         }
         
+        .search-container {
+            flex-grow: 1;
+            display: flex;
+            gap: 6px;
+        }
+
         .search { 
-            flex-grow: 1; 
+            width: 100%;
             background: var(--surface); 
             border: 1px solid var(--border); 
             padding: 8px 12px; 
@@ -63,8 +68,20 @@
             outline: none; 
             font-size: 0.8rem;
         }
+
+        .filter-select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-sub);
+            padding: 0 8px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            outline: none;
+            cursor: pointer;
+        }
         
-        .btn-refresh { 
+        .btn-icon { 
             background: var(--surface); 
             border: 1px solid var(--border); 
             color: #fff; 
@@ -75,8 +92,8 @@
             display: grid;
             place-items: center;
         }
-        .btn-refresh svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; }
-        .btn-refresh.spinning svg { animation: spin 0.8s linear infinite; }
+        .btn-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+        .btn-icon.spinning svg { animation: spin 0.8s linear infinite; }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
@@ -106,6 +123,20 @@
             flex-direction: column; 
             position: relative;
         }
+
+        .card-cover {
+            width: 100%;
+            height: 140px;
+            background: #1e293b;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
         
         .card-body { 
             padding: 12px; 
@@ -130,7 +161,7 @@
         .star-btn {
             background: none;
             border: none;
-            font-size: 1rem;
+            font-size: 1.1rem;
             cursor: pointer;
             padding: 2px;
             opacity: 0.3;
@@ -166,25 +197,23 @@
             border-radius: 30px; 
             padding: 4px; 
             display: flex; 
-            gap: 2px; 
+            gap: 4px; 
             backdrop-filter: blur(12px); 
             z-index: 200;
-            max-width: 95vw;
-            overflow-x: auto;
         }
         
         .nav-btn { 
             background: none; 
             border: none; 
             color: var(--text-sub); 
-            padding: 8px 12px; 
+            padding: 8px 16px; 
             font-weight: 800; 
-            font-size: 0.62rem; 
+            font-size: 0.7rem; 
             border-radius: 20px; 
             cursor: pointer; 
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             white-space: nowrap;
         }
         .nav-btn.active { 
@@ -204,8 +233,16 @@
 
     <header>
         <div class="logo">🐤</div>
-        <input type="text" id="search" class="search" placeholder="CERCA..." oninput="render()">
-        <button class="btn-refresh" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
+        <div class="search-container">
+            <input type="text" id="search" class="search" placeholder="CERCA..." oninput="render()">
+            <select id="source-filter" class="filter-select" onchange="render()">
+                <option value="ALL">TUTTI I FILTRI</option>
+                <option value="IGN Italia">IGN ITALIA</option>
+                <option value="Multiplayer">MULTIPLAYER</option>
+                <option value="Instant Gaming">INSTANT GAMING</option>
+            </select>
+        </div>
+        <button class="btn-icon" id="refresh-btn" onclick="manualRefresh()" title="AGGIORNA">
             <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14.93-4M20 12a8 8 0 0 1-14.93 4M14 8h5V3M10 16H5v5"/></svg>
         </button>
     </header>
@@ -217,10 +254,9 @@
     </main>
 
     <nav>
-        <button class="nav-btn active" id="tab-news" onclick="switchTab('news')">📰 NEWS FEED</button>
+        <button class="nav-btn active" id="tab-news" onclick="switchTab('news')">📰 NEWS</button>
         <button class="nav-btn" id="tab-deals" onclick="switchTab('deals')">🏷️ OFFERTE</button>
-        <button class="nav-btn" id="tab-saved-news" onclick="switchTab('saved-news')">⭐ NEWS PREFERITE</button>
-        <button class="nav-btn" id="tab-saved-deals" onclick="switchTab('saved-deals')">🔥 OFFERTE PREFERITE</button>
+        <button class="nav-btn" id="tab-saved" onclick="switchTab('saved')">⭐ PREFERITI</button>
     </nav>
 
     <script>
@@ -231,8 +267,7 @@
 
         let articles = [];
         let deals = [];
-        let savedNews = JSON.parse(localStorage.getItem('np_saved_news_v2') || '[]');
-        let savedDeals = JSON.parse(localStorage.getItem('np_saved_deals_v2') || '[]');
+        let savedItems = JSON.parse(localStorage.getItem('np_unified_saved_v1') || '[]');
         let currentTab = 'news';
 
         async function fetchProxy(url) {
@@ -245,4 +280,155 @@
                     let r = await fetch(p);
                     if (r.ok) {
                         let text = await r.text();
-                        if (text &&
+                        if (text && text.includes("<rss")) return text;
+                    }
+                } catch(e) {}
+            }
+            return null;
+        }
+
+        function extractImage(item, desc) {
+            let mediaContent = item.getElementsByTagName("media:content")[0];
+            if (mediaContent && mediaContent.getAttribute("url")) {
+                return mediaContent.getAttribute("url");
+            }
+            let enclosure = item.querySelector("enclosure");
+            if (enclosure && enclosure.getAttribute("url")) {
+                return enclosure.getAttribute("url");
+            }
+            let imgMatch = desc.match(/src=["'](.*?)["']/i);
+            if (imgMatch && imgMatch[1]) {
+                return imgMatch[1];
+            }
+            return null;
+        }
+
+        function parseXML(xmlStr, source) {
+            if (!xmlStr) return [];
+            try {
+                let xml = new DOMParser().parseFromString(xmlStr, "text/xml");
+                return Array.from(xml.querySelectorAll("item")).map(i => {
+                    const link = (i.querySelector("link")?.textContent || "#").trim();
+                    const title = (i.querySelector("title")?.textContent || "").replace(/<[^>]*>?/gm, '').trim();
+                    const rawDesc = i.querySelector("description")?.textContent || "";
+                    const desc = rawDesc.replace(/<[^>]*>?/gm, '').slice(0, 90) + "...";
+                    const img = extractImage(i, rawDesc);
+
+                    return {
+                        id: link || title,
+                        title: title,
+                        link: link,
+                        desc: desc,
+                        image: img,
+                        source: source
+                    };
+                });
+            } catch(e) { return []; }
+        }
+
+        async function loadData() {
+            articles = [];
+            deals = [];
+
+            for (let f of FEEDS) {
+                let xml = await fetchProxy(f.url);
+                if (xml) articles.push(...parseXML(xml, f.name));
+            }
+
+            let dealsXml = await fetchProxy("https://www.instant-gaming.com/it/feed/rss/");
+            if (dealsXml) deals = parseXML(dealsXml, "Instant Gaming");
+
+            render();
+        }
+
+        async function manualRefresh() {
+            const btn = document.getElementById('refresh-btn');
+            btn.classList.add('spinning');
+            await loadData();
+            btn.classList.remove('spinning');
+        }
+
+        function toggleSave(e, id) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const pool = [...articles, ...deals, ...savedItems];
+            const item = pool.find(i => i.id === id);
+            if (!item) return;
+
+            const idx = savedItems.findIndex(i => i.id === id);
+            if (idx > -1) {
+                savedItems.splice(idx, 1);
+            } else {
+                savedItems.push(item);
+            }
+
+            localStorage.setItem('np_unified_saved_v1', JSON.stringify(savedItems));
+            render();
+        }
+
+        function switchTab(t) {
+            currentTab = t;
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${t}`).classList.add('active');
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('grid');
+            const q = document.getElementById('search').value.toLowerCase();
+            const selectedSource = document.getElementById('source-filter').value;
+            
+            let list = [];
+            if (currentTab === 'news') list = articles;
+            else if (currentTab === 'deals') list = deals;
+            else if (currentTab === 'saved') list = savedItems;
+
+            const filtered = list.filter(i => {
+                const matchesSearch = i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q);
+                const matchesFilter = selectedSource === 'ALL' || i.source === selectedSource;
+                return matchesSearch && matchesFilter;
+            });
+
+            grid.innerHTML = "";
+
+            if (filtered.length === 0) {
+                let emptyText = "NESSUN ELEMENTO TROVATO.";
+                if (currentTab === 'saved') emptyText = "NESSUN PREFERITO SALVATO.";
+                grid.innerHTML = `<div class="status-box">${emptyText}</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const isSaved = savedItems.some(s => s.id === item.id);
+                
+                const card = document.createElement('a');
+                card.className = 'card';
+                card.href = item.link;
+                card.target = '_blank';
+                
+                const imageHTML = item.image ? `
+                    <div class="card-cover">
+                        <img class="card-img" src="${item.image}" alt="" loading="lazy">
+                    </div>
+                ` : '';
+
+                card.innerHTML = `
+                    ${imageHTML}
+                    <div class="card-body">
+                        <div class="card-header">
+                            <span class="card-tag">${item.source}</span>
+                            <button class="star-btn ${isSaved ? 'active' : ''}" onclick="toggleSave(event, '${item.id}')">⭐</button>
+                        </div>
+                        <h2 class="card-title">${item.title}</h2>
+                        <p class="card-desc">${item.desc}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
