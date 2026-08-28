@@ -8,7 +8,7 @@ const DEALS_FEED = "https://www.instant-gaming.com/it/feed/rss/";
 
 let articles = [];
 let deals = [];
-let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v12') || '[]');
+let savedItems = JSON.parse(localStorage.getItem('np_saved_items_v13') || '[]');
 let currentTab = 'news';
 let currentPageIndex = 0;
 let totalPages = 0;
@@ -83,7 +83,7 @@ function parseXMLDoc(xmlString) {
             id: link || title,
             title: title,
             link: link,
-            desc: cleanDesc.length > 200 ? cleanDesc.slice(0, 200) + "..." : cleanDesc,
+            desc: cleanDesc.length > 220 ? cleanDesc.slice(0, 220) + "..." : cleanDesc,
             image: img,
             time: formatDateTime(pubDate)
         };
@@ -144,7 +144,7 @@ function toggleSave(e, id) {
         savedItems.push(item);
     }
 
-    localStorage.setItem('np_saved_items_v12', JSON.stringify(savedItems));
+    localStorage.setItem('np_saved_items_v13', JSON.stringify(savedItems));
     render();
 }
 
